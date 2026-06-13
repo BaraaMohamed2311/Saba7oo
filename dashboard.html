@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HALLO AMRIKA · Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a12;--s1:#13131f;--s2:#1a1a28;--s3:#1f1f2e;
+  --b:#1e1e30;--b2:#2a2a42;
+  --acc:#00e5a0;--txt:#e8e8f0;--mu:#6b6b88;--mu2:#9090aa;
+  --gold:#f5c842;--red:#ff4466;
+  --fn:'Segoe UI',system-ui,sans-serif;
+  --panel:#161628;--panel-2:#1d1d33;--line:#25253f;
+  --text:#ececf6;--text-dim:#9a9ab6;--accent:#5cf0c2;--accent-2:#ffd55c;
+  --pitch-green:#1d6b3a;--pitch-green-2:#1a5e34;
+}
+html,body{height:100%;background:var(--bg);overflow-x:hidden}
+body{display:flex;flex-direction:column;min-height:100vh}
+.w{background:var(--bg);font-family:var(--fn);color:var(--txt);display:flex;flex-direction:column;width:100%;min-height:100vh}
+
+/* ─── topbar ─── */
+.topbar{background:var(--s1);border-bottom:1px solid var(--b);padding:11px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.logo{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--acc)}
+.lt{font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.ls{font-size:9px;color:var(--mu);letter-spacing:.5px;margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:6px}
+
+/* ─── auth overlay ─── */
+#authOverlay{position:fixed;inset:0;background:rgba(10,10,18,.97);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-box{background:var(--s1);border:1px solid var(--b2);border-radius:14px;padding:28px 24px;width:100%;max-width:380px}
+.auth-title{font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--acc);margin-bottom:5px}
+.auth-sub{font-size:11px;color:var(--mu);margin-bottom:22px}
+.auth-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--mu);margin-bottom:5px;display:block}
+select.fi,input.fi{width:100%;background:var(--s2);border:1px solid var(--b2);color:var(--txt);padding:8px 10px;border-radius:7px;font-size:13px;font-family:var(--fn);outline:none;transition:border .15s;margin-bottom:12px}
+select.fi:focus,input.fi:focus{border-color:var(--acc)}
+.auth-err{color:var(--red);font-size:11px;margin-bottom:10px;min-height:16px}
+.auth-ok{color:#44dd88;font-size:11px;margin-bottom:10px;min-height:16px}
+.auth-tabs{display:flex;gap:0;margin-bottom:22px;border-bottom:1px solid var(--b2)}
+.auth-tab{flex:1;padding:8px;text-align:center;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;user-select:none}
+.auth-tab.on{color:var(--acc);border-bottom-color:var(--acc)}
+.auth-panel{display:none}.auth-panel.on{display:block}
+.profile-badge{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}
+.profile-badge .name{font-weight:600;color:var(--acc)}
+.profile-badge .logout-x{margin-left:auto;color:var(--mu);font-size:14px;background:none;border:none;cursor:pointer;padding:0 2px}
+.profile-badge .logout-x:hover{color:var(--red)}
+
+/* ─── tabs ─── */
+.tabs{display:flex;background:var(--s1);border-bottom:1px solid var(--b);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab{padding:10px 14px;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;user-select:none;white-space:nowrap;flex-shrink:0}
+.tab.on{color:var(--acc);border-bottom-color:var(--acc)}
+.pane{padding:16px;display:none;flex:1;overflow-y:auto}
+.pane.on{display:flex;flex-direction:column}
+.lbl{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu);margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.lbl::after{content:'';flex:1;height:1px;background:var(--b)}
+.row{display:flex;gap:6px;margin-bottom:7px}
+input.fi2,textarea.fi2{flex:1;background:var(--s2);border:1px solid var(--b);color:var(--txt);padding:7px 10px;border-radius:6px;font-size:12px;font-family:var(--fn);outline:none;transition:border .15s}
+input.fi2:focus,textarea.fi2:focus{border-color:var(--acc)}
+input.fi2::placeholder,textarea.fi2::placeholder{color:var(--mu);font-size:11px}
+.btn{background:transparent;border:1px solid var(--b2);color:var(--mu2);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-family:var(--fn);display:flex;align-items:center;gap:4px;transition:all .15s;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--acc);color:var(--acc)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#000;font-weight:700}
+.btn.pri:hover:not(:disabled){opacity:.85}
+.btn:disabled{opacity:.3;cursor:default}
+.ibox{background:rgba(0,102,255,.07);border:1px solid rgba(0,102,255,.2);border-radius:7px;padding:11px 13px;font-size:11px;color:#88aadd;line-height:1.7;margin-bottom:11px}
+.ibox b{color:#aabbff}
+.ibox code{background:rgba(255,255,255,.08);padding:1px 5px;border-radius:3px;font-size:10px;font-family:monospace}
+kbd{background:var(--s1);border:1px solid var(--b2);border-radius:3px;padding:1px 5px;font-size:9px;font-family:monospace;color:var(--mu2)}
+.account-card{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:10px}
+.account-card .uid{font-size:10px;font-family:monospace;color:var(--mu);word-break:break-all;margin-top:2px}
+.account-card .name{font-size:13px;font-weight:600}
+.rm-btn{margin-left:auto;background:transparent;border:none;color:var(--mu);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px}
+.rm-btn:hover{color:var(--red)}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:7px;margin-bottom:13px}
+.sc{background:var(--s1);border:1px solid var(--b);border-radius:8px;padding:10px;text-align:center}
+.sn{font-size:20px;font-weight:700;color:var(--acc)}
+.sl{font-size:9px;color:var(--mu);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed}
+thead tr{border-bottom:1px solid var(--b)}
+th{color:var(--mu);font-weight:500;text-align:left;padding:6px 7px;font-size:9px;letter-spacing:1px;text-transform:uppercase}
+td{padding:7px 7px;border-bottom:1px solid rgba(255,255,255,.03);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+.rn{font-weight:700;color:var(--mu)}
+.rn.top{color:var(--gold)}
+.badge{font-size:9px;padding:2px 5px;border-radius:6px;font-weight:700;text-transform:uppercase}
+.bm{background:rgba(0,229,160,.12);color:var(--acc);border:1px solid rgba(0,229,160,.2)}
+.bt{background:rgba(245,200,66,.1);color:var(--gold);border:1px solid rgba(245,200,66,.18)}
+.empty{color:var(--mu);text-align:center;padding:20px;font-size:11px;font-style:italic}
+.divider{height:1px;background:var(--b);margin:9px 0}
+.sb{background:var(--s1);border-top:1px solid var(--b);padding:7px 16px;font-size:10px;color:var(--mu);display:flex;align-items:center;gap:6px;min-height:32px}
+.spin{width:11px;height:11px;border:2px solid var(--b2);border-top-color:var(--acc);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ok{color:#44dd88}.er{color:var(--red)}
+
+/* ─── profile group header ─── */
+.profile-group{margin-bottom:28px}
+.profile-group-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;background:var(--s2);border:1px solid var(--b2);border-radius:10px}
+.profile-group-name{font-size:13px;font-weight:700;color:var(--gold)}
+.profile-group-count{font-size:10px;color:var(--mu);background:var(--b2);border-radius:10px;padding:2px 8px}
+.profile-mine-tag{font-size:9px;background:rgba(0,229,160,.12);color:var(--acc);border:1px solid rgba(0,229,160,.2);border-radius:6px;padding:2px 7px;letter-spacing:.5px}
+
+/* ─── pitch card ─── */
+.squad-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.my-squad-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;font-family:Inter,system-ui,sans-serif;color:var(--text)}
+.my-squad-card.marked{border-color:var(--gold);background:rgba(245,200,66,.04)}
+.squad-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.squad-card-team{font-size:14px;font-weight:800;color:var(--text)}
+.squad-card-form{font-size:10px;color:var(--text-dim);margin-top:1px}
+.squad-card-pts{text-align:right}
+.squad-card-pts .pts-num{font-size:22px;font-weight:800;color:var(--accent)}
+.squad-card-pts .pts-lbl{font-size:9px;color:var(--text-dim)}
+.squad-card-rank{font-size:10px;color:var(--text-dim);text-align:right;margin-top:1px}
+.squad-card-label{font-size:9px;color:var(--mu2);margin-bottom:6px;letter-spacing:.5px;text-transform:uppercase}
+.pitch-wrap{display:flex;flex-direction:column;gap:10px;padding:0}
+.pitch442{position:relative;background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 36px,rgba(0,0,0,.04) 36px 72px),linear-gradient(180deg,var(--pitch-green) 0%,var(--pitch-green-2) 100%);border-radius:12px;border:1px solid var(--line);overflow:hidden;aspect-ratio:1/1.25;width:100%;max-width:460px;margin:0 auto}
+.pl-box{pointer-events:none;position:absolute;left:25%;right:25%;height:60px;border:2px solid rgba(255,255,255,.22)}
+.pl-box-top{top:0;border-top:none}
+.pl-box-bottom{bottom:0;border-bottom:none}
+.pl-circle{pointer-events:none;position:absolute;left:50%;top:50%;width:90px;height:90px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid rgba(255,255,255,.22)}
+.pl-halfway{pointer-events:none;position:absolute;left:0;right:0;top:50%;height:0;border-top:2px solid rgba(255,255,255,.22)}
+.pitch-slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:2}
+.ps-flag{font-size:22px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));margin-bottom:2px}
+.flag-img-mid{width:26px;height:auto;border-radius:2px;display:block}
+.flag-img-mid-fallback{display:inline-block;width:24px;height:16px;background:var(--b2);border-radius:2px}
+.ps-name{color:var(--text);background:rgba(10,10,18,.82);border:1.5px solid var(--accent);border-radius:8px;padding:3px 7px;font-weight:800;font-size:11px;text-overflow:ellipsis;max-width:110px;white-space:nowrap;overflow:hidden;direction:ltr;text-align:center}
+.ps-tag{border:1.5px solid rgba(255,255,255,.28);border-radius:8px;font-size:9px;letter-spacing:1px;font-weight:800;color:var(--text-dim);background:rgba(10,10,18,.6);padding:1px 6px;text-align:center}
+.ps-pts{font-size:9px;font-weight:700;border-radius:6px;padding:1px 5px}
+.ps-pts.pos{background:rgba(92,240,194,.15);color:var(--accent);border:1px solid rgba(92,240,194,.3)}
+.ps-pts.neg{background:rgba(255,68,102,.12);color:var(--red);border:1px solid rgba(255,68,102,.25)}
+.ps-next{font-size:9px;color:var(--text-dim);margin-top:2px;font-style:italic;max-width:110px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;text-align:center}
+.bench{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.bench-label{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px}
+.bench-slot{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text)}
+.flag-img{width:16px;height:auto;border-radius:1px;vertical-align:middle}
+.flag-img-fallback{display:inline-block;width:14px;height:10px;background:var(--b2);border-radius:1px;vertical-align:middle}
+.match-hist{margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
+.mh-title{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.mh-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:10px;border-bottom:1px solid rgba(255,255,255,.03)}
+.mh-row:last-child{border:none}
+.mh-date{color:var(--mu2)}
+.mh-pts{font-weight:700}
+.mh-pts.pos{color:var(--acc)}
+.mh-pts.neg{color:var(--red)}
+.mh-pts.zero{color:var(--mu)}
+.mark-btn{margin-top:10px;width:100%;background:transparent;border:1px solid var(--b2);color:var(--mu);padding:5px 10px;border-radius:6px;cursor:pointer;font-size:10px;font-family:var(--fn);letter-spacing:.5px;text-transform:uppercase;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.mark-btn:hover{border-color:var(--gold);color:var(--gold)}
+.mark-btn.active{background:rgba(245,200,66,.12);border-color:var(--gold);color:var(--gold);font-weight:700}
+.mark-btn .star{font-size:12px;line-height:1}
+.mark-btn:disabled{opacity:.3;cursor:default}
+
+/* leaderboard profile column */
+.lb-profile{font-size:9px;color:var(--mu2);background:var(--b2);border-radius:4px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+tr.lb-mine{background:rgba(0,229,160,.055)}
+tr.lb-mine td:first-child{border-left:2px solid var(--acc)}
+
+/* auth-locked state */
+.lock-msg{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:40px 20px;text-align:center;color:var(--mu)}
+.lock-msg .lock-icon{font-size:36px;margin-bottom:6px}
+.lock-msg p{font-size:12px;line-height:1.6}
+
+@media(max-width:600px){
+  .topbar{padding:10px 12px}
+  .lt{font-size:11px}
+  .pane{padding:12px}
+  .squad-grid{grid-template-columns:1fr}
+  .sg{grid-template-columns:repeat(2,1fr)}
+  .row{flex-wrap:wrap}
+  input.fi2,textarea.fi2{font-size:13px}
+  .btn{font-size:12px;padding:7px 12px}
+  table{font-size:10px}
+  th,td{padding:6px 5px}
+  .topbar .btn span{display:none}
+}
+@media(max-width:380px){
+  .sg{grid-template-columns:1fr 1fr}
+  .lt{font-size:10px;letter-spacing:1px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     AUTH OVERLAY
+═══════════════════════════════════════════ -->
+<div id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-title">🏆 HALLO AMRIKA</div>
+    <div class="auth-sub" style="margin-bottom:16px">هاللو أمريكا · Dashboard</div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab on" id="tabLogin" onclick="authTab('login')">Sign in</div>
+      <div class="auth-tab"   id="tabSignup" onclick="authTab('signup')">Create account</div>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="auth-panel on" id="panelLogin">
+      <label class="auth-label">Profile</label>
+      <select class="fi" id="authProfile">
+        <option value="">— Select profile —</option>
+        <option>استاذ احمد فؤاد</option>
+        <option>المعلم عجينة</option>
+        <option>الريس بلبول</option>
+        <option>الاوسطا عجلاوي</option>
+        <option>بينيصة</option>
+        <option>دكتور بروستيتس</option>
+        <option>عسكري اللوليبوب</option>
+      </select>
+      <label class="auth-label">Password</label>
+      <input class="fi" type="password" id="authPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="auth-err" id="authErr"></div>
+      <button class="btn pri" onclick="doLogin()" style="width:100%;justify-content:center;padding:10px;font-size:13px">Sign in →</button>
+    </div>
+
+    <!-- SIGNUP -->
+    <div class="auth-panel" id="panelSignup">
+      <label class="auth-label">Pick your profile</label>
+      <select class="fi" id="signupProfile">
+        <option value="">— Select profile —</option>
+        <option>استاذ احمد فؤاد</option>
+        <option>المعلم عجينة</option>
+        <option>الريس بلبول</option>
+        <option>الاوسطا عجلاوي</option>
+        <option>بينيصة</option>
+        <option>دكتور بروستيتس</option>
+        <option>عسكري اللوليبوب</option>
+      </select>
+      <label class="auth-label">Set password</label>
+      <input class="fi" type="password" id="signupPass" placeholder="Choose a password">
+      <label class="auth-label">Confirm password</label>
+      <input class="fi" type="password" id="signupPass2" placeholder="Repeat password" onkeydown="if(event.key==='Enter')doSignup()">
+      <div class="auth-err" id="signupErr"></div>
+      <div class="auth-ok"  id="signupOk"  style="display:none"></div>
+      <button class="btn pri" onclick="doSignup()" style="width:100%;justify-content:center;padding:10px;font-size:13px">Create account →</button>
+    </div>
+
+    <div id="authSpinner" style="display:none;text-align:center;margin-top:12px"><div class="spin" style="margin:0 auto"></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MAIN APP
+═══════════════════════════════════════════ -->
+<div class="w" id="app" style="display:none">
+  <div class="topbar">
+    <div class="logo">
+      <div class="dot"></div>
+      <div><div class="lt">HALLO AMRIKA</div><div class="ls">هاللو أمريكا · Dashboard</div></div>
+    </div>
+    <div class="topbar-right">
+      <div id="profileBadge" class="profile-badge" title="Signed in">
+        <span>👤</span>
+        <span class="name" id="profileName"></span>
+        <button class="logout-x" onclick="doLogout()" title="Sign out">✕</button>
+      </div>
+      <button class="btn" id="refBtn" onclick="fetchAll()">↺ <span>Refresh</span></button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab on"  onclick="tab('setup')">Setup</div>
+    <div class="tab"     onclick="tab('overview')">Overview</div>
+    <div class="tab"     onclick="tab('board')">Leaderboard</div>
+    <div class="tab"     onclick="tab('squads')">My Squads</div>
+  </div>
+
+  <!-- SETUP -->
+  <div class="pane on" id="pane-setup">
+    <div class="lbl">My accounts</div>
+    <div class="ibox">
+      Add your <b>user_id (UUID)</b> to track your squads. Open <kbd>F12</kbd> → Network → look for requests to <b>entries</b> or <b>leaderboard_totals</b> — the URL contains your <code>user_id</code>. Or decode your <b>Authorization: Bearer eyJ…</b> at <b>jwt.io</b> — the <code>sub</code> field is it.
+    </div>
+    <div class="row">
+      <input class="fi2" id="uidIn" placeholder="user_id (UUID e.g. a1b2c3d4-…)" style="flex:2" onkeydown="if(event.key==='Enter')addAccount()">
+      <input class="fi2" id="labelIn" placeholder="Label (optional)">
+      <button class="btn pri" onclick="addAccount()">Add</button>
+    </div>
+    <div class="lbl" style="margin-top:10px">Bulk add</div>
+    <div class="row" style="flex-direction:column;gap:6px">
+      <textarea class="fi2" id="bulkUids" rows="3" placeholder="Paste multiple user_ids, one per line. Optionally: uuid label" style="resize:vertical;font-size:11px;line-height:1.6"></textarea>
+      <button class="btn" onclick="bulkAdd()" style="align-self:flex-start">Add all</button>
+    </div>
+    <div id="accountList"></div>
+    <button class="btn pri" onclick="fetchAll()" id="fetchBtn" style="width:100%;justify-content:center;padding:9px;margin-top:8px">
+      ▶ Fetch live data
+    </button>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="pane" id="pane-overview">
+    <div class="sg" id="statsGrid"></div>
+    <div id="ovMsg" class="empty">Fetch data first.</div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="pane" id="pane-board">
+    <div style="overflow-x:auto">
+      <table>
+        <colgroup><col style="width:36px"><col><col style="width:90px"><col style="width:90px"><col style="width:48px"><col style="width:50px"></colgroup>
+        <thead><tr><th>#</th><th>Team</th><th>Label</th><th>Profile</th><th>Pts</th><th>Global</th></tr></thead>
+        <tbody id="lbBody"><tr><td colspan="6" class="empty">No data yet.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SQUADS -->
+  <div class="pane" id="pane-squads">
+    <div id="squadsContainer"><div class="empty">No data yet. Fetch data first.</div></div>
+  </div>
+
+  <div class="sb" id="sb">Ready — add user IDs in Setup and click Fetch.</div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CONFIG & DICTIONARIES
+═══════════════════════════════════════════════════════════ */
+const LEAGUE_ID = '11111111-1111-1111-1111-111111111111';
+const SB_URL    = 'https://nyytjswemjrybjfmqaaq.supabase.co';
+const SB_KEY    = 'sb_publishable_2dpkprdkF6MM9EWHrbabHw_tir1tYAZ';
+const AUTH_API = 'http://localhost:3000';
+
+const PROFILE_NAMES = [
+  'استاذ احمد فؤاد','المعلم عجينة','الريس بلبول',
+  'الاوسطا عجلاوي','بينيصة','دكتور بروستيتس','عسكري اللوليبوب'
+];
+
+// FIFA/IOC 3-Letter to ISO 2-Letter code mapping helper
+const countryCodeMap = {
+  "arg": "ar", "mor": "ma", "mar": "ma", "swe": "se", "sui": "ch", 
+  "nor": "no", "col": "co", "mex": "mx", "uzb": "uz", "ger": "de", 
+  "eng": "gb", "ecu": "ec", "cpv": "cv", "cod": "cd", "gha": "gh",
+  "egy": "eg", "fra": "fr", "esp": "es", "ita": "it", "bra": "br"
+};
+
+function getIso2Code(code3) {
+  if(!code3) return "";
+  const low = code3.toLowerCase();
+  return countryCodeMap[low] || low.slice(0, 2);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════ */
+let currentProfile = null;
+let allData = []; // Combined live/cached array 
+let allLb   = [];
+
+/* ═══════════════════════════════════════════════════════════
+   STORAGE HELPERS
+═══════════════════════════════════════════════════════════ */
+function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v))}catch(e){} }
+function lsGet(k)  { try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null} }
+function lsDel(k)  { try{localStorage.removeItem(k)}catch(e){} }
+
+function accountKey(profile){ return 'ha-accounts-'+profile; }
+function markedKey(profile) { return 'ha-marked-'+profile; }
+function getAccounts(profile){ return lsGet(accountKey(profile))||[]; }
+function saveAccounts(profile,arr){ lsSet(accountKey(profile),arr); }
+function getMarked(profile)  { return lsGet(markedKey(profile))||[]; }
+function saveMarked(profile,arr){ lsSet(markedKey(profile),arr); }
+
+/* ═══════════════════════════════════════════════════════════
+   MONGO DATA EXCHANGE SYNC
+═══════════════════════════════════════════════════════════ */
+async function mongoFind(filter){
+  const r = await fetch(`${AUTH_API}/api/profile`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ name: filter.name })
+  });
+  if (!r.ok) throw new Error('Auth server error ' + r.status);
+  const j = await r.json();
+  return j.found ? j.doc : null;
+}
+
+async function mongoInsert(doc){
+  const r = await fetch(`${AUTH_API}/api/signup`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ name: doc.name, password: doc.password })
+  });
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || 'Signup failed');
+  return j;
+}
+
+// Push local live changes down to MongoDB Atlas
+async function syncSquadsToMongo(profile, accountsList, dataPayload) {
+  try {
+    await fetch(`${AUTH_API}/api/save-squads`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ name: profile, accounts: accountsList, squads: dataPayload })
+    });
+  } catch(e) {
+    console.error("Failed background mongo sync: ", e);
+  }
+}
+
+// Gather snapshot details of all structural groups registered across fallback users
+async function loadAllProfilesFromMongo() {
+  try {
+    const res = await fetch(`${AUTH_API}/api/all-profiles-data`);
+    if(!res.ok) return [];
+    const json = await res.json();
+    return json.profiles || [];
+  } catch(e) {
+    console.error(e);
+    return [];
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AUTH INTERFACE WORKFLOWS
+═══════════════════════════════════════════════════════════ */
+function authTab(which){
+  document.getElementById('tabLogin').className  = 'auth-tab'+(which==='login'?' on':'');
+  document.getElementById('tabSignup').className = 'auth-tab'+(which==='signup'?' on':'');
+  document.getElementById('panelLogin').className  = 'auth-panel'+(which==='login'?' on':'');
+  document.getElementById('panelSignup').className = 'auth-panel'+(which==='signup'?' on':'');
+  document.getElementById('authErr').textContent   = '';
+  document.getElementById('signupErr').textContent = '';
+  document.getElementById('signupOk').style.display = 'none';
+  document.getElementById('authSpinner').style.display = 'none';
+}
+
+async function doLogin(){
+  const profile  = document.getElementById('authProfile').value.trim();
+  const password = document.getElementById('authPass').value;
+  const errEl    = document.getElementById('authErr');
+  errEl.textContent = '';
+  if (!profile)  { errEl.textContent = 'Please select a profile.'; return; }
+  if (!password) { errEl.textContent = 'Please enter your password.'; return; }
+
+  document.getElementById('authSpinner').style.display = 'block';
+  try {
+    const doc = await mongoFind({ name: profile });
+    document.getElementById('authSpinner').style.display = 'none';
+    if (!doc) { errEl.textContent = 'Profile not registered yet.'; return; }
+    if (doc.password !== password) { errEl.textContent = 'Incorrect password.'; return; }
+    
+    // Bootstrap accounts back from mongo document properties if local storage is blank
+    if(doc.accounts && doc.accounts.length > 0) {
+      saveAccounts(profile, doc.accounts);
+    }
+
+    lsSet('ha-session', { profile, at: Date.now() });
+    activateSession(profile);
+  } catch(e) {
+    document.getElementById('authSpinner').style.display = 'none';
+    errEl.textContent = 'Could not reach server.';
+  }
+}
+
+async function doSignup(){
+  const profile  = document.getElementById('signupProfile').value.trim();
+  const pass1    = document.getElementById('signupPass').value;
+  const pass2    = document.getElementById('signupPass2').value;
+  const errEl    = document.getElementById('signupErr');
+  const okEl     = document.getElementById('signupOk');
+  errEl.textContent = '';
+  okEl.style.display = 'none';
+
+  if (!profile) { errEl.textContent = 'Please select a profile.'; return; }
+  if (!pass1)   { errEl.textContent = 'Please choose a password.'; return; }
+  if (pass1.length < 4) { errEl.textContent = 'Password must be at least 4 characters.'; return; }
+  if (pass1 !== pass2)  { errEl.textContent = 'Passwords do not match.'; return; }
+
+  document.getElementById('authSpinner').style.display = 'block';
+  try {
+    const existing = await mongoFind({ name: profile });
+    if (existing) {
+      document.getElementById('authSpinner').style.display = 'none';
+      errEl.textContent = 'This profile already has an account.';
+      return;
+    }
+    await mongoInsert({ name: profile, password: pass1 });
+    document.getElementById('authSpinner').style.display = 'none';
+    okEl.textContent = `Account created for "${profile}"!`;
+    okEl.style.display = 'block';
+    await new Promise(r=>setTimeout(r,1200));
+    lsSet('ha-session', { profile, at: Date.now() });
+    activateSession(profile);
+  } catch(e) {
+    document.getElementById('authSpinner').style.display = 'none';
+    errEl.textContent = 'Server down.';
+  }
+}
+
+function activateSession(profile){
+  currentProfile = profile;
+  document.getElementById('profileName').textContent = profile;
+  document.getElementById('authOverlay').style.display = 'none';
+  document.getElementById('app').style.display = '';
+  renderAccounts();
+  
+  // Seed basic UI views instantly using structural groupings saved on Mongo
+  loadProfileGroupsFromCache();
+}
+
+function doLogout(){
+  lsDel('ha-session');
+  currentProfile = null;
+  allData = []; allLb = [];
+  document.getElementById('authOverlay').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  authTab('login');
+}
+
+function checkSession(){
+  const sess = lsGet('ha-session');
+  if (sess && sess.profile && PROFILE_NAMES.includes(sess.profile)) {
+    activateSession(sess.profile);
+  } else {
+    document.getElementById('authOverlay').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ACCOUNTS OPERATIONS
+═══════════════════════════════════════════════════════════ */
+function addAccount(){
+  if (!currentProfile) return;
+  const uid   = document.getElementById('uidIn').value.trim();
+  const label = document.getElementById('labelIn').value.trim();
+  if (!uid) return;
+  const arr = getAccounts(currentProfile);
+  if (!arr.find(a=>a.uid===uid)){
+    arr.push({uid, label: label||'Account '+(arr.length+1)});
+    saveAccounts(currentProfile, arr);
+  }
+  document.getElementById('uidIn').value='';
+  document.getElementById('labelIn').value='';
+  renderAccounts();
+}
+
+function bulkAdd(){
+  if (!currentProfile) return;
+  const raw = document.getElementById('bulkUids').value;
+  const lines = raw.split(/\n/).map(l=>l.trim()).filter(Boolean);
+  const arr = getAccounts(currentProfile);
+  let added=0;
+  for (const line of lines){
+    const [uid,...rest]=line.split(/\s+/);
+    if (!uid||uid.length<10) continue;
+    const label=rest.join(' ')||'Account '+(arr.length+1);
+    if (!arr.find(a=>a.uid===uid)){arr.push({uid,label});added++;}
+  }
+  if (added) saveAccounts(currentProfile, arr);
+  document.getElementById('bulkUids').value='';
+  renderAccounts();
+}
+
+function removeAccount(uid){
+  if (!currentProfile) return;
+  const arr = getAccounts(currentProfile).filter(a=>a.uid!==uid);
+  saveAccounts(currentProfile, arr);
+  allData = allData.filter(d=>d.account.uid!==uid || d.account.profile!==currentProfile);
+  renderAccounts();
+  renderAll();
+}
+
+function renderAccounts(){
+  if (!currentProfile) return;
+  const arr = getAccounts(currentProfile);
+  const el  = document.getElementById('accountList');
+  if (!arr.length){ el.innerHTML='<div style="font-size:11px;color:var(--mu);margin-bottom:8px">No accounts added yet.</div>'; return; }
+  el.innerHTML = arr.map(a=>`
+    <div class="account-card">
+      <div style="flex:1;min-width:0">
+        <div class="name">${esc(a.label)}</div>
+        <div class="uid">${esc(a.uid)}</div>
+      </div>
+      <button class="rm-btn" onclick="removeAccount('${esc(a.uid)}')" title="Remove">&times;</button>
+    </div>`).join('');
+}
+
+function tab(name){
+  ['setup','overview','board','squads'].forEach((t,i)=>{
+    document.getElementById('pane-'+t).className='pane'+(t===name?' on':'');
+    document.querySelectorAll('.tab')[i].className='tab'+(t===name?' on':'');
+  });
+}
+
+function st(msg,loading=false,ok=false,err=false){
+  document.getElementById('sb').innerHTML=
+    (loading?'<div class="spin"></div>':'')+
+    `<span class="${ok?'ok':err?'er':''}">${msg}</span>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SUPABASE LIVE DATA CAPTURE ROUTINES
+═══════════════════════════════════════════════════════════ */
+async function sbFetch(path){
+  const r=await fetch(`${SB_URL}/rest/v1/${path}`,{
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Accept':'application/json'}
+  });
+  if (!r.ok){const t=await r.text();throw new Error(`${r.status}: ${t.slice(0,200)}`);}
+  return r.json();
+}
+
+async function rpc(fn,body){
+  const r=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify(body)
+  });
+  if (!r.ok){const t=await r.text();throw new Error(`${r.status} rpc/${fn}`);}
+  return r.json();
+}
+
+// Initial structural grouping view loader using database data snapshots
+async function loadProfileGroupsFromCache() {
+  const profileDocs = await loadAllProfilesFromMongo();
+  allData = [];
+  
+  for(const pDoc of profileDocs) {
+    if (pDoc.squads && pDoc.squads.length > 0) {
+      // Push each parsed squad payload into global data array instance
+      pDoc.squads.forEach(sq => {
+        allData.push(sq);
+      });
+    }
+  }
+  buildLeaderboardArray();
+  renderAll();
+}
+
+function buildLeaderboardArray() {
+  allLb = allData
+    .filter(d => d.rankRow || d.entry)
+    .map(d => ({
+      user_id:     d.account.uid,
+      team_name:   d.entry?.team_name || d.rankRow?.team_name || '—',
+      total_points:d.rankRow?.total_points ?? d.rankRow?.points ?? null,
+      _rank:       d.rankRow?.rank ?? d.rankRow?.user_rank ?? null,
+      _total:      d.rankRow?.total_entries ?? d.rankRow?.total ?? null,
+      _ownerLabel: d.account.label,
+      _profile:    d.account.profile,
+    }));
+  // Deduplicate entries by checking unique user_id paths
+  const uniqueMap = {};
+  allLb = allLb.filter(item => {
+    if(uniqueMap[item.user_id]) return false;
+    uniqueMap[item.user_id] = true;
+    return true;
+  });
+  allLb.sort((a,b) => (b.total_points ?? -Infinity) - (a.total_points ?? -Infinity));
+}
+
+async function fetchAll(){
+  if (!currentProfile){st('Sign in first.',false,false,true);return;}
+
+  const myAccounts = getAccounts(currentProfile);
+  if (!myAccounts.length){st('Add accounts in Setup first.',false,false,true);tab('setup');return;}
+
+  document.getElementById('fetchBtn').disabled=true;
+  document.getElementById('refBtn').disabled=true;
+
+  try {
+    st(`Fetching live entries for ${myAccounts.length} account(s)…`,true);
+    
+    // 1. Resolve live items via Supabase for the active profile session
+    const currentProfileData = await Promise.all(myAccounts.map(async account => {
+      const uid = account.uid;
+      let rankRow=null; let entry=null; let scores=[];
+      try{const res=await rpc('user_rank',{p_user_id:uid,p_league_id:LEAGUE_ID});rankRow=Array.isArray(res)?res[0]:res;}catch(e){}
+      try{const res=await sbFetch(`entries?select=id,user_id,team_name,formation,xi_json,xi_json_gw1,submitted_at&league_id=eq.${encodeURIComponent(LEAGUE_ID)}&user_id=eq.${uid}&limit=1`);entry=res?.[0]||null;}catch(e){}
+      if(entry?.id){try{scores=await sbFetch(`scores?select=entry_id,match_date,points,breakdown&entry_id=eq.${entry.id}&order=match_date.asc`)||[];}catch(e){}}
+      
+      return { account: { ...account, profile: currentProfile }, entry, rankRow, scores };
+    }));
+
+    // Clean up empty fetch failures
+    const validFetchedSquads = currentProfileData.filter(d => d.entry || d.rankRow);
+
+    // 2. Commit updates out to MongoDB 
+    await syncSquadsToMongo(currentProfile, myAccounts, validFetchedSquads);
+
+    // 3. Re-aggregate across all group metrics
+    await loadProfileGroupsFromCache();
+    
+    st(`Loaded live items. Combined with profile caching maps successfully.`,false,true);
+    tab('overview');
+  } catch(err){
+    st(`Error: ${err.message}`,false,false,true);
+  }
+  document.getElementById('fetchBtn').disabled=false;
+  document.getElementById('refBtn').disabled=false;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDERING LAYOUT STYLES
+═══════════════════════════════════════════════════════════ */
+function renderAll(){ renderOverview(); renderLeaderboard(); renderSquads(); }
+
+function renderOverview(){
+  const el=document.getElementById('ovMsg');
+  if (!allData.length){el.style.display='block';return;}
+  el.style.display='none';
+  const ranks =allData.filter(d=>d.rankRow?.rank??d.rankRow?.user_rank).map(d=>+(d.rankRow.rank??d.rankRow.user_rank));
+  const totals=allData.filter(d=>d.rankRow?.total_entries??d.rankRow?.total).map(d=>+(d.rankRow.total_entries??d.rankRow.total));
+  const pts   =allData.filter(d=>d.rankRow).map(d=>+(d.rankRow.total_points??d.rankRow.points??0));
+  const bestRank =ranks.length?Math.min(...ranks):null;
+  const totalPool=totals.length?Math.max(...totals):null;
+  const topPts   =pts.length?Math.max(...pts):null;
+  const pct=(bestRank&&totalPool)?Math.round((1-(bestRank-1)/totalPool)*100)+'%':'—';
+  
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="sc"><div class="sn">${allData.length}</div><div class="sl">Total Tracked Squads</div></div>
+    <div class="sc"><div class="sn">${bestRank?'#'+bestRank:'—'}</div><div class="sl">Best Rank</div></div>
+    <div class="sc"><div class="sn">${topPts!==null?topPts:'—'}</div><div class="sl">Top Score</div></div>
+    <div class="sc"><div class="sn">${pct}</div><div class="sl">Percentile</div></div>
+    <div class="sc"><div class="sn">${totalPool??'—'}</div><div class="sl">Total Players</div></div>
+  `;
+}
+
+function renderLeaderboard(){
+  const tbody=document.getElementById('lbBody');
+  if (!allLb.length){tbody.innerHTML='<tr><td colspan="6" class="empty">No entries computed yet.</td></tr>';return;}
+  tbody.innerHTML=allLb.map((r,i)=>{
+    const isMyProfile = r._profile===currentProfile;
+    return `<tr class="${isMyProfile?'lb-mine':''}">
+      <td><span class="rn ${i<3?'top':''}">${i+1}</span></td>
+      <td title="${esc(r.team_name)}">${esc(r.team_name)}</td>
+      <td style="color:var(--mu2);font-size:10px" title="${esc(r._ownerLabel)}">${esc(r._ownerLabel)}</td>
+      <td><span class="lb-profile">${esc(r._profile)}</span></td>
+      <td style="font-weight:700">${r.total_points??'—'}</td>
+      <td style="font-size:9px;color:var(--mu)">${r._rank?'#'+r._rank:'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderSquads(){
+  const el=document.getElementById('squadsContainer');
+  if (!allData.length){el.innerHTML='<div class="empty">No tracking data across profiles. Click Fetch Live Data.</div>';return;}
+
+  const groups={};
+  PROFILE_NAMES.forEach(p => groups[p]=[]);
+  
+  allData.forEach(d => {
+    const p = d.account?.profile;
+    if (groups[p]) groups[p].push(d);
+  });
+
+  let html='';
+  PROFILE_NAMES.forEach(profile => {
+    const items=groups[profile];
+    if (!items || !items.length) return;
+    const isMe=profile===currentProfile;
+    html+=`<div class="profile-group">
+      <div class="profile-group-header">
+        <span class="profile-group-name">${esc(profile)}</span>
+        <span class="profile-group-count">${items.length} formation squad${items.length>1?'s':''}</span>
+        ${isMe?'<span class="profile-mine-tag">✓ Mine</span>':''}
+      </div>
+      <div class="squad-grid">
+        ${items.map(d=>renderPitchCard(d,isMe)).join('')}
+      </div>
+    </div>`;
+  });
+  el.innerHTML=html||'<div class="empty">No squads matched.</div>';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PITCH CARD GENERATORS
+═══════════════════════════════════════════════════════════ */
+function renderPitchCard({account,entry,rankRow,scores}, canEdit){
+  const team  = entry?.team_name||rankRow?.team_name||'—';
+  const form  = entry?.formation||rankRow?.formation||'—';
+  const pts   = rankRow?.total_points??rankRow?.points??'—';
+  const globalRank=rankRow?.rank??rankRow?.user_rank??null;
+  const totalPool =rankRow?.total_entries??rankRow?.total??null;
+  const rankStr   = globalRank?`#${globalRank}${totalPool?' of '+totalPool:''}`:'Unranked';
+  const marked    = isMarked(account.profile, account.uid);
+
+  const xi=parseXI(entry);
+  const starters=xi.filter(x=>!x.wild).sort((a,b)=>(a.slot||0)-(b.slot||0));
+  const wild=xi.find(x=>x.wild);
+
+  const pitchHtml = buildPitch(starters, wild, scores, entry);
+
+  const matchHtml = scores && scores.length ? `
+    <div class="match-hist">
+      <div class="mh-title">Match history</div>
+      ${scores.map(s=>{
+        const mpts=s.points||0;
+        const bd=parseBD(s.breakdown);
+        const icons=Object.entries(bd).flatMap(([,st])=>{
+          const p=[];
+          if(st.goals)  p.push(`⚽${st.goals>1?st.goals:''}`);
+          if(st.assists)p.push(`🎁${st.assists>1?st.assists:''}`);
+          if(st.mvp)    p.push('⭐');
+          if(st.red)    p.push('🟥');
+          return p;
+        }).slice(0,8).join(' ');
+        return `<div class="mh-row">
+          <span class="mh-date">${(s.match_date||'').slice(0,10)}</span>
+          <span style="font-size:9px;color:var(--mu)">${icons}</span>
+          <span class="mh-pts ${ptsClass(mpts)}">${mpts>=0?'+':''}${mpts} pts</span>
+        </div>`;
+      }).join('')}
+    </div>` : '';
+
+  const markDisabled = canEdit ? '' : 'disabled title="You can only mark your own squads"';
+
+  return `<div class="my-squad-card${marked?' marked':''}" data-uid="${esc(account.uid)}" data-profile="${esc(account.profile)}">
+    <div class="squad-card-label">${esc(account.label)}</div>
+    <div class="squad-card-header">
+      <div>
+        <div class="squad-card-team">${esc(team)}</div>
+        <div class="squad-card-form">${esc(form)}</div>
+      </div>
+      <div class="squad-card-pts">
+        <div class="pts-num">${pts}</div>
+        <div class="pts-lbl">pts</div>
+        <div class="squad-card-rank">${rankStr}</div>
+      </div>
+    </div>
+    ${pitchHtml}
+    ${matchHtml}
+    <button class="mark-btn${marked?' active':''}" ${markDisabled}
+      onclick="toggleMark('${esc(account.profile)}','${esc(account.uid)}')">
+      <span class="star">${marked?'★':'☆'}</span> ${marked?'Marked':'Mark'}
+    </button>
+  </div>`;
+}
+
+function buildPitch(starters, wild, scores, entry){
+  const posMap={
+    'GK': {left:50,top:90},
+    'LCB':{left:37,top:72},'RCB':{left:63,top:72},
+    'CB': {left:50,top:72},
+    'LB': {left:13,top:72},'RB': {left:87,top:72},
+    'FB': {left:13,top:72},
+    'LCM':{left:38,top:48},'RCM':{left:62,top:48},
+    'CM': {left:50,top:48},
+    'LW': {left:13,top:48},'RW': {left:87,top:48},
+    'LM': {left:13,top:48},'RM': {left:87,top:48},
+    'MID':{left:50,top:48},
+    'CAM':{left:50,top:38},
+    'ST': {left:50,top:18},'FW':{left:50,top:18},
+  };
+  const tagCounts={};
+  const slotsHtml=starters.map(p=>{
+    const tag=p.tag||'GK';
+    tagCounts[tag]=(tagCounts[tag]||0)+1;
+    let pos=posMap[tag]||{left:50,top:50};
+    if(tagCounts[tag]===2){
+      if(tag==='ST') pos={left:64,top:18};
+      else if(tag==='CB') pos={left:63,top:72};
+    }
+    const name=p.shirt_name||p.name||'?';
+    
+    // Convert 3-letter country flags to lowercase ISO 2-letter format for flagcdn
+    const iso2Country = getIso2Code(p.nation_code);
+    
+    const ppts=entry?calcPlayerPts(p.name||name,scores):null;
+    const ptsStr=ppts!==null?`${ppts>=0?'+':''}${ppts}`:'';
+    const ptsHtml=ppts!==null&&ppts!==0?`<div class="ps-pts ${ptsClass(ppts)}">${ptsStr}</div>`:'';
+    return `<div class="pitch-slot" style="left:${pos.left}%;top:${pos.top}%;">
+      <div class="ps-flag">
+        ${iso2Country ? `<img class="flag-img-mid" src="https://flagcdn.com/w40/${iso2Country}.png" alt="${esc(p.nation_code)}" onerror="this.style.display='none'">` : `<span class="flag-img-mid-fallback"></span>`}
+      </div>
+      <div class="ps-name" style="font-size:${name.length>8?'9px':'11px'}">${esc(name)}</div>
+      <div class="ps-tag">${esc(tag)}</div>
+      ${ptsHtml}
+    </div>`;
+  }).join('');
+
+  const wildIso2 = wild ? getIso2Code(wild.nation_code) : "";
+  const wildHtml = wild ? `
+    <div class="bench">
+      <div class="bench-label">BENCH · Wildcard</div>
+      <div class="bench-slot">
+        <span>
+          ${wildIso2 ? `<img class="flag-img" src="https://flagcdn.com/w20/${wildIso2}.png" alt="">` : `<span class="flag-img-fallback"></span>`} 
+          <b>${esc(wild.shirt_name||wild.name||'?')}</b>
+          <span style="color:var(--text-dim);font-size:11px;">${esc(wild.club||'')}</span>
+        </span>
+      </div>
+    </div>` : '';
+
+  return `<div class="pitch-wrap">
+    <div class="pitch442">
+      <div class="pl-box pl-box-top"></div>
+      <div class="pl-box pl-box-bottom"></div>
+      <div class="pl-circle"></div>
+      <div class="pl-halfway"></div>
+      ${slotsHtml}
+    </div>
+    ${wildHtml}
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UX MARKINGS & HELPERS
+═══════════════════════════════════════════════════════════ */
+function isMarked(profile, uid){ return (getMarked(profile)||[]).includes(uid); }
+function toggleMark(profile, uid){
+  if (profile!==currentProfile) return;
+  let arr=getMarked(profile);
+  if (arr.includes(uid)) arr=arr.filter(x=>x!==uid);
+  else arr.push(uid);
+  saveMarked(profile,arr);
+  const card=document.querySelector(`.my-squad-card[data-uid="${CSS.escape(uid)}"][data-profile="${CSS.escape(profile)}"]`);
+  const btn =card?.querySelector('.mark-btn');
+  if (!card||!btn) return;
+  const m=arr.includes(uid);
+  card.classList.toggle('marked',m);
+  btn.classList.toggle('active',m);
+  btn.innerHTML=`<span class="star">${m?'★':'☆'}</span> ${m?'Marked':'Mark'}`;
+}
+
+function parseXI(entry){
+  try{const raw=entry?.xi_json||entry?.xi_json_gw1;return typeof raw==='string'?JSON.parse(raw):(raw||[]);}catch(e){return [];}
+}
+function parseBD(bd){ try{return typeof bd==='string'?JSON.parse(bd):(bd||{});}catch(e){return {};} }
+
+function calcPlayerPts(name,scores){
+  let total=0;
+  if(!scores) return total;
+  for(const s of scores){
+    const bd=parseBD(s.breakdown);
+    const st=bd[name];
+    if(!st) continue;
+    total+=(st.goals||0)+(st.assists||0)+(st.win||0)+(st.full90||0)+(st.cleanSheet||0)+(st.mvp||0)-(st.red?1:0);
+  }
+  return total;
+}
+function ptsClass(n){return n>0?'pos':n<0?'neg':'zero';}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+
+checkSession();
+</script>
+</body>
+</html>
