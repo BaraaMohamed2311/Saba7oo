@@ -318,7 +318,7 @@ tr.lb-mine td:first-child{border-left:2px solid var(--acc)}
 const LEAGUE_ID = '11111111-1111-1111-1111-111111111111';
 const SB_URL    = 'https://nyytjswemjrybjfmqaaq.supabase.co';
 const SB_KEY    = 'sb_publishable_2dpkprdkF6MM9EWHrbabHw_tir1tYAZ';
-const AUTH_API = 'http://localhost:3000';
+const AUTH_API =  window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
 const PROFILE_NAMES = [
   'استاذ احمد فؤاد','المعلم عجينة','الريس بلبول',
