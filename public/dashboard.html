@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>HALLO AMRIKA · Dashboard</title>
+<title>Custom Dashboard</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#0a0a12;--s1:#13131f;--s2:#1a1a28;--s3:#1f1f2e;
   --b:#1e1e30;--b2:#2a2a42;
-  --acc:#00e5a0;--txt:#e8e8f0;--mu:#6b6b88;--mu2:#9090aa;
-  --gold:#f5c842;--red:#ff4466;
+  --acc:#26e500;--txt:#e8e8f0;--mu:#6b6b88;--mu2:#9090aa;
+  --gold:#ffbf00;--red:#db0028;
   --fn:'Segoe UI',system-ui,sans-serif;
   --panel:#161628;--panel-2:#1d1d33;--line:#25253f;
   --text:#ececf6;--text-dim:#9a9ab6;--accent:#5cf0c2;--accent-2:#ffd55c;
@@ -185,8 +185,8 @@ tr.lb-mine td:first-child{border-left:2px solid var(--acc)}
 ═══════════════════════════════════════════ -->
 <div id="authOverlay">
   <div class="auth-box">
-    <div class="auth-title">🏆 HALLO AMRIKA</div>
-    <div class="auth-sub" style="margin-bottom:16px">هاللو أمريكا · Dashboard</div>
+    <div class="auth-title">🏆 Custom Dashboard 🏆</div>
+    <div class="auth-sub" style="margin-bottom:16px">هاللو أمريكا</div>
 
     <div class="auth-tabs">
       <div class="auth-tab on" id="tabLogin" onclick="authTab('login')">Sign in</div>
@@ -245,7 +245,7 @@ tr.lb-mine td:first-child{border-left:2px solid var(--acc)}
   <div class="topbar">
     <div class="logo">
       <div class="dot"></div>
-      <div><div class="lt">HALLO AMRIKA</div><div class="ls">هاللو أمريكا · Dashboard</div></div>
+      <div><div class="lt">HALLO AMRIKA</div><div class="ls">هاللو أمريكا</div></div>
     </div>
     <div class="topbar-right">
       <div id="profileBadge" class="profile-badge" title="Signed in">
@@ -398,6 +398,19 @@ async function syncSquadsToMongo(profile, accountsList, dataPayload) {
   }
 }
 
+// Persist the current profile's marks array to MongoDB (fire-and-forget)
+async function mongoSaveMarks(profile, marksArr) {
+  try {
+    await fetch(`${AUTH_API}/api/save-marks`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ name: profile, marks: marksArr })
+    });
+  } catch(e) {
+    console.warn('mongoSaveMarks failed (offline?):', e.message);
+  }
+}
+
 // Gather snapshot details of all structural groups registered across fallback users
 async function loadAllProfilesFromMongo() {
   try {
@@ -440,9 +453,16 @@ async function doLogin(){
     if (!doc) { errEl.textContent = 'Profile not registered yet.'; return; }
     if (doc.password !== password) { errEl.textContent = 'Incorrect password.'; return; }
     
-    // Bootstrap accounts back from mongo document properties if local storage is blank
+    // Bootstrap accounts from MongoDB if local storage is blank
     if(doc.accounts && doc.accounts.length > 0) {
       saveAccounts(profile, doc.accounts);
+    }
+
+    // Hydrate persisted marks — MongoDB is source of truth; merge with any local marks
+    if (Array.isArray(doc.marks) && doc.marks.length > 0) {
+      const localMarks = getMarked(profile);
+      const merged = [...new Set([...localMarks, ...doc.marks])];
+      saveMarked(profile, merged);
     }
 
     lsSet('ha-session', { profile, at: Date.now() });
@@ -904,7 +924,11 @@ function toggleMark(profile, uid){
   let arr=getMarked(profile);
   if (arr.includes(uid)) arr=arr.filter(x=>x!==uid);
   else arr.push(uid);
-  saveMarked(profile,arr);
+  saveMarked(profile, arr);
+
+  // Persist to MongoDB so marks survive across devices / sessions
+  mongoSaveMarks(profile, arr);
+
   const card=document.querySelector(`.my-squad-card[data-uid="${CSS.escape(uid)}"][data-profile="${CSS.escape(profile)}"]`);
   const btn =card?.querySelector('.mark-btn');
   if (!card||!btn) return;

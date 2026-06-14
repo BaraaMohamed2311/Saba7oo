@@ -56,7 +56,7 @@ app.post('/api/profile', async (req, res) => {
     const database = await getDb();
     const doc = await col(database).findOne(
       { name },
-      { projection: { _id: 0, name: 1, password: 1, squads: 1, accounts: 1 } }
+      { projection: { _id: 0, name: 1, password: 1, squads: 1, accounts: 1, marks: 1 } }
     );
     if (!doc) return res.json({ found: false });
     return res.json({ found: true, doc });
@@ -117,6 +117,29 @@ app.get('/api/all-profiles-data', async (req, res) => {
   } catch (e) {
     console.error('/api/all-profiles-data error:', e.message);
     return res.status(500).json({ error: 'Database read error' });
+  }
+});
+
+// Save/replace the marks array for a profile
+// Body: { name: string, marks: string[] }   — marks is an array of uid strings
+app.post('/api/save-marks', async (req, res) => {
+  const { name, marks } = req.body || {};
+  if (!name) return res.status(400).json({ error: 'Profile name required' });
+  if (!ALLOWED_PROFILES.includes(name))
+    return res.status(403).json({ error: 'Unknown profile' });
+
+  try {
+    const database = await getDb();
+    await col(database).updateOne(
+      { name },
+      { $set: { marks: Array.isArray(marks) ? marks : [] } },
+      { upsert: false }
+    );
+    console.log(`✓ Saved marks for profile: ${name} (${(marks||[]).length} marked)`);
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error('/api/save-marks error:', e.message);
+    return res.status(500).json({ error: 'Database error' });
   }
 });
 
