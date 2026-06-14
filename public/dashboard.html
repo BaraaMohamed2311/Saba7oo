@@ -7,14 +7,14 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0a0a12;--s1:#13131f;--s2:#1a1a28;--s3:#1f1f2e;
-  --b:#1e1e30;--b2:#2a2a42;
-  --acc:#26e500;--txt:#e8e8f0;--mu:#6b6b88;--mu2:#9090aa;
-  --gold:#ffbf00;--red:#db0028;
+  --bg:#080c14;--s1:#0d1320;--s2:#111929;--s3:#151e30;
+  --b:#1c2538;--b2:#243048;
+  --acc:#f0a500;--txt:#dde4f0;--mu:#5a6a88;--mu2:#8090b0;
+  --gold:#f0a500;--red:#e03050;
   --fn:'Segoe UI',system-ui,sans-serif;
-  --panel:#161628;--panel-2:#1d1d33;--line:#25253f;
-  --text:#ececf6;--text-dim:#9a9ab6;--accent:#5cf0c2;--accent-2:#ffd55c;
-  --pitch-green:#1d6b3a;--pitch-green-2:#1a5e34;
+  --panel:#0d1320;--panel-2:#121a2e;--line:#1c2538;
+  --text:#dde4f0;--text-dim:#7a8aaa;--accent:#7c6fff;--accent-2:#f0a500;
+  --pitch-green:#1a5c38;--pitch-green-2:#144e2e;
 }
 html,body{height:100%;background:var(--bg);overflow-x:hidden}
 body{display:flex;flex-direction:column;min-height:100vh}
@@ -699,7 +699,16 @@ async function fetchAll(){
     // 2. Commit updates out to MongoDB 
     await syncSquadsToMongo(currentProfile, myAccounts, validFetchedSquads);
 
-    // 3. Re-aggregate across all group metrics
+    // 3. Re-hydrate marks from MongoDB so the live render reflects the latest saved marks
+    try {
+      const freshDoc = await mongoFind({ name: currentProfile });
+      if (freshDoc && Array.isArray(freshDoc.marks) && freshDoc.marks.length > 0) {
+        // MongoDB is the source of truth for marks — replace local copy entirely
+        saveMarked(currentProfile, freshDoc.marks);
+      }
+    } catch(e) { /* non-fatal */ }
+
+    // 4. Re-aggregate across all group metrics
     await loadProfileGroupsFromCache();
     
     st(`Loaded live items. Combined with profile caching maps successfully.`,false,true);
@@ -863,14 +872,21 @@ function buildPitch(starters, wild, scores, entry){
     'CAM':{left:50,top:38},
     'ST': {left:50,top:18},'FW':{left:50,top:18},
   };
+  // Pre-count tags so we can assign symmetric positions for multi-player slots
+  const tagTotals={};
+  starters.forEach(p=>{ const t=p.tag||'GK'; tagTotals[t]=(tagTotals[t]||0)+1; });
+
   const tagCounts={};
   const slotsHtml=starters.map(p=>{
     const tag=p.tag||'GK';
     tagCounts[tag]=(tagCounts[tag]||0)+1;
     let pos=posMap[tag]||{left:50,top:50};
-    if(tagCounts[tag]===2){
-      if(tag==='ST') pos={left:64,top:18};
-      else if(tag==='CB') pos={left:63,top:72};
+
+    // For dual strikers: spread symmetrically (35% and 65%)
+    if((tag==='ST'||tag==='FW') && tagTotals[tag]===2){
+      pos = tagCounts[tag]===1 ? {left:35,top:18} : {left:65,top:18};
+    } else if(tagCounts[tag]===2){
+      if(tag==='CB') pos={left:63,top:72};
     }
     const name=p.shirt_name||p.name||'?';
     
