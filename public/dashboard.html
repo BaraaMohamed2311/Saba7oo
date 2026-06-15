@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Custom Dashboard</title>
+<title>HALLO AMRIKA · Dashboard</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#080c14;--s1:#0d1320;--s2:#111929;--s3:#151e30;
-  --b:#1c2538;--b2:#243048;
-  --acc:#f0a500;--txt:#dde4f0;--mu:#5a6a88;--mu2:#8090b0;
-  --gold:#f0a500;--red:#e03050;
+  --bg:#0a0a12;--s1:#13131f;--s2:#1a1a28;--s3:#1f1f2e;
+  --b:#1e1e30;--b2:#2a2a42;
+  --acc:#00e5a0;--txt:#e8e8f0;--mu:#6b6b88;--mu2:#9090aa;
+  --gold:#f5c842;--red:#ff4466;
   --fn:'Segoe UI',system-ui,sans-serif;
-  --panel:#0d1320;--panel-2:#121a2e;--line:#1c2538;
-  --text:#dde4f0;--text-dim:#7a8aaa;--accent:#7c6fff;--accent-2:#f0a500;
-  --pitch-green:#1a5c38;--pitch-green-2:#144e2e;
+  --panel:#161628;--panel-2:#1d1d33;--line:#25253f;
+  --text:#ececf6;--text-dim:#9a9ab6;--accent:#5cf0c2;--accent-2:#ffd55c;
+  --pitch-green:#1d6b3a;--pitch-green-2:#1a5e34;
 }
 html,body{height:100%;background:var(--bg);overflow-x:hidden}
 body{display:flex;flex-direction:column;min-height:100vh}
@@ -185,8 +185,8 @@ tr.lb-mine td:first-child{border-left:2px solid var(--acc)}
 ═══════════════════════════════════════════ -->
 <div id="authOverlay">
   <div class="auth-box">
-    <div class="auth-title">🏆 Custom Dashboard 🏆</div>
-    <div class="auth-sub" style="margin-bottom:16px">هاللو أمريكا</div>
+    <div class="auth-title">🏆 HALLO AMRIKA</div>
+    <div class="auth-sub" style="margin-bottom:16px">هاللو أمريكا · Dashboard</div>
 
     <div class="auth-tabs">
       <div class="auth-tab on" id="tabLogin" onclick="authTab('login')">Sign in</div>
@@ -245,9 +245,12 @@ tr.lb-mine td:first-child{border-left:2px solid var(--acc)}
   <div class="topbar">
     <div class="logo">
       <div class="dot"></div>
-      <div><div class="lt">HALLO AMRIKA</div><div class="ls">هاللو أمريكا</div></div>
+      <div><div class="lt">HALLO AMRIKA</div><div class="ls">هاللو أمريكا · Dashboard</div></div>
     </div>
     <div class="topbar-right">
+      <button class="btn" id="refBtn" onclick="fetchAll()" title="Re-fetch all data from Supabase" style="gap:5px">
+        <span id="refBtnIcon">↻</span> <span>Refresh</span>
+      </button>
       <div id="profileBadge" class="profile-badge" title="Signed in">
         <span>👤</span>
         <span class="name" id="profileName"></span>
@@ -318,7 +321,7 @@ tr.lb-mine td:first-child{border-left:2px solid var(--acc)}
 const LEAGUE_ID = '11111111-1111-1111-1111-111111111111';
 const SB_URL    = 'https://nyytjswemjrybjfmqaaq.supabase.co';
 const SB_KEY    = 'sb_publishable_2dpkprdkF6MM9EWHrbabHw_tir1tYAZ';
-const AUTH_API =  window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
+const AUTH_API = window.location.hostname === 'localhost' ? 'http://localhost:3000' : '';
 
 const PROFILE_NAMES = [
   'استاذ احمد فؤاد','المعلم عجينة','الريس بلبول',
@@ -398,19 +401,6 @@ async function syncSquadsToMongo(profile, accountsList, dataPayload) {
   }
 }
 
-// Persist the current profile's marks array to MongoDB (fire-and-forget)
-async function mongoSaveMarks(profile, marksArr) {
-  try {
-    await fetch(`${AUTH_API}/api/save-marks`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ name: profile, marks: marksArr })
-    });
-  } catch(e) {
-    console.warn('mongoSaveMarks failed (offline?):', e.message);
-  }
-}
-
 // Gather snapshot details of all structural groups registered across fallback users
 async function loadAllProfilesFromMongo() {
   try {
@@ -453,16 +443,9 @@ async function doLogin(){
     if (!doc) { errEl.textContent = 'Profile not registered yet.'; return; }
     if (doc.password !== password) { errEl.textContent = 'Incorrect password.'; return; }
     
-    // Bootstrap accounts from MongoDB if local storage is blank
+    // Bootstrap accounts back from mongo document properties if local storage is blank
     if(doc.accounts && doc.accounts.length > 0) {
       saveAccounts(profile, doc.accounts);
-    }
-
-    // Hydrate persisted marks — MongoDB is source of truth; merge with any local marks
-    if (Array.isArray(doc.marks) && doc.marks.length > 0) {
-      const localMarks = getMarked(profile);
-      const merged = [...new Set([...localMarks, ...doc.marks])];
-      saveMarked(profile, merged);
     }
 
     lsSet('ha-session', { profile, at: Date.now() });
@@ -673,51 +656,87 @@ function buildLeaderboardArray() {
 async function fetchAll(){
   if (!currentProfile){st('Sign in first.',false,false,true);return;}
 
-  const myAccounts = getAccounts(currentProfile);
-  if (!myAccounts.length){st('Add accounts in Setup first.',false,false,true);tab('setup');return;}
+  const fetchBtn = document.getElementById('fetchBtn');
+  const refBtn   = document.getElementById('refBtn');
+  const refIcon  = document.getElementById('refBtnIcon');
 
-  document.getElementById('fetchBtn').disabled=true;
-  document.getElementById('refBtn').disabled=true;
+  fetchBtn.disabled = true;
+  refBtn.disabled   = true;
+  if (refIcon) refIcon.style.animation = 'spin .6s linear infinite';
 
   try {
-    st(`Fetching live entries for ${myAccounts.length} account(s)…`,true);
-    
-    // 1. Resolve live items via Supabase for the active profile session
-    const currentProfileData = await Promise.all(myAccounts.map(async account => {
-      const uid = account.uid;
-      let rankRow=null; let entry=null; let scores=[];
-      try{const res=await rpc('user_rank',{p_user_id:uid,p_league_id:LEAGUE_ID});rankRow=Array.isArray(res)?res[0]:res;}catch(e){}
-      try{const res=await sbFetch(`entries?select=id,user_id,team_name,formation,xi_json,xi_json_gw1,submitted_at&league_id=eq.${encodeURIComponent(LEAGUE_ID)}&user_id=eq.${uid}&limit=1`);entry=res?.[0]||null;}catch(e){}
-      if(entry?.id){try{scores=await sbFetch(`scores?select=entry_id,match_date,points,breakdown&entry_id=eq.${entry.id}&order=match_date.asc`)||[];}catch(e){}}
-      
-      return { account: { ...account, profile: currentProfile }, entry, rankRow, scores };
+    // ── Step 1: Load all profiles' stored accounts from MongoDB ──────────────
+    st('Loading all profiles from database…', true);
+    const profileDocs = await loadAllProfilesFromMongo();
+
+    // Build map: profileName → accounts[]
+    const profileAccountMap = {};
+    for (const pDoc of profileDocs) {
+      if (pDoc.name && Array.isArray(pDoc.accounts) && pDoc.accounts.length > 0) {
+        profileAccountMap[pDoc.name] = pDoc.accounts;
+      }
+    }
+    // Always merge current profile's local accounts (may not be synced yet)
+    const localAccounts = getAccounts(currentProfile);
+    if (localAccounts.length > 0) {
+      const existing = profileAccountMap[currentProfile] || [];
+      const merged   = [...existing];
+      for (const la of localAccounts) {
+        if (!merged.find(a => a.uid === la.uid)) merged.push(la);
+      }
+      profileAccountMap[currentProfile] = merged;
+    }
+
+    const profileNames = Object.keys(profileAccountMap);
+    if (!profileNames.length) {
+      st('No accounts found. Add accounts in Setup first.', false, false, true);
+      tab('setup');
+      return;
+    }
+
+    const totalAccounts = profileNames.reduce((s,p) => s + profileAccountMap[p].length, 0);
+    st(`Fetching ${totalAccounts} account(s) across ${profileNames.length} profile(s)…`, true);
+
+    // ── Step 2: Refetch every UID from Supabase for every profile in parallel ─
+    await Promise.all(profileNames.map(async profileName => {
+      const accounts = profileAccountMap[profileName];
+
+      const freshSquads = await Promise.all(accounts.map(async account => {
+        const uid = account.uid;
+        let rankRow = null, entry = null, scores = [];
+        try { const r = await rpc('user_rank',{p_user_id:uid,p_league_id:LEAGUE_ID}); rankRow = Array.isArray(r)?r[0]:r; } catch(e){}
+        try { const r = await sbFetch(`entries?select=id,user_id,team_name,formation,xi_json,xi_json_gw1,submitted_at&league_id=eq.${encodeURIComponent(LEAGUE_ID)}&user_id=eq.${uid}&limit=1`); entry = r?.[0]||null; } catch(e){}
+        if (entry?.id) { try { scores = await sbFetch(`scores?select=entry_id,match_date,points,breakdown&entry_id=eq.${entry.id}&order=match_date.asc`) || []; } catch(e){} }
+        return { account:{ ...account, profile: profileName }, entry, rankRow, scores };
+      }));
+
+      const validSquads = freshSquads.filter(d => d.entry || d.rankRow);
+
+      // ── Step 3: Save fresh data back to MongoDB for this profile ─────────
+      await syncSquadsToMongo(profileName, accounts, validSquads);
     }));
 
-    // Clean up empty fetch failures
-    const validFetchedSquads = currentProfileData.filter(d => d.entry || d.rankRow);
-
-    // 2. Commit updates out to MongoDB 
-    await syncSquadsToMongo(currentProfile, myAccounts, validFetchedSquads);
-
-    // 3. Re-hydrate marks from MongoDB so the live render reflects the latest saved marks
+    // ── Step 4: Re-hydrate marks from MongoDB for current profile ────────────
     try {
       const freshDoc = await mongoFind({ name: currentProfile });
       if (freshDoc && Array.isArray(freshDoc.marks) && freshDoc.marks.length > 0) {
-        // MongoDB is the source of truth for marks — replace local copy entirely
         saveMarked(currentProfile, freshDoc.marks);
       }
     } catch(e) { /* non-fatal */ }
 
-    // 4. Re-aggregate across all group metrics
+    // ── Step 5: Reload from MongoDB and re-render ─────────────────────────────
     await loadProfileGroupsFromCache();
-    
-    st(`Loaded live items. Combined with profile caching maps successfully.`,false,true);
-    tab('overview');
-  } catch(err){
-    st(`Error: ${err.message}`,false,false,true);
+    st(`All ${totalAccounts} accounts refreshed · ${new Date().toLocaleTimeString()}`, false, true);
+    tab('squads');
+
+  } catch(err) {
+    st(`Error: ${err.message}`, false, false, true);
+  } finally {
+    // Always re-enable regardless of success or failure
+    fetchBtn.disabled = false;
+    refBtn.disabled   = false;
+    if (refIcon) refIcon.style.animation = '';
   }
-  document.getElementById('fetchBtn').disabled=false;
-  document.getElementById('refBtn').disabled=false;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -872,21 +891,14 @@ function buildPitch(starters, wild, scores, entry){
     'CAM':{left:50,top:38},
     'ST': {left:50,top:18},'FW':{left:50,top:18},
   };
-  // Pre-count tags so we can assign symmetric positions for multi-player slots
-  const tagTotals={};
-  starters.forEach(p=>{ const t=p.tag||'GK'; tagTotals[t]=(tagTotals[t]||0)+1; });
-
   const tagCounts={};
   const slotsHtml=starters.map(p=>{
     const tag=p.tag||'GK';
     tagCounts[tag]=(tagCounts[tag]||0)+1;
     let pos=posMap[tag]||{left:50,top:50};
-
-    // For dual strikers: spread symmetrically (35% and 65%)
-    if((tag==='ST'||tag==='FW') && tagTotals[tag]===2){
-      pos = tagCounts[tag]===1 ? {left:35,top:18} : {left:65,top:18};
-    } else if(tagCounts[tag]===2){
-      if(tag==='CB') pos={left:63,top:72};
+    if(tagCounts[tag]===2){
+      if(tag==='ST') pos={left:64,top:18};
+      else if(tag==='CB') pos={left:63,top:72};
     }
     const name=p.shirt_name||p.name||'?';
     
@@ -940,11 +952,7 @@ function toggleMark(profile, uid){
   let arr=getMarked(profile);
   if (arr.includes(uid)) arr=arr.filter(x=>x!==uid);
   else arr.push(uid);
-  saveMarked(profile, arr);
-
-  // Persist to MongoDB so marks survive across devices / sessions
-  mongoSaveMarks(profile, arr);
-
+  saveMarked(profile,arr);
   const card=document.querySelector(`.my-squad-card[data-uid="${CSS.escape(uid)}"][data-profile="${CSS.escape(profile)}"]`);
   const btn =card?.querySelector('.mark-btn');
   if (!card||!btn) return;
