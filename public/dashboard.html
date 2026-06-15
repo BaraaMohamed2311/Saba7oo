@@ -248,6 +248,9 @@ tr.lb-mine td:first-child{border-left:2px solid var(--acc)}
       <div><div class="lt">HALLO AMRIKA</div><div class="ls">هاللو أمريكا · Dashboard</div></div>
     </div>
     <div class="topbar-right">
+      <button class="btn" id="refBtn" onclick="fetchAll()" title="Re-fetch all data from Supabase" style="gap:5px">
+        <span id="refBtnIcon">↻</span> <span>Refresh</span>
+      </button>
       <div id="profileBadge" class="profile-badge" title="Signed in">
         <span>👤</span>
         <span class="name" id="profileName"></span>
