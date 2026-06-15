@@ -7,14 +7,14 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0a0a12;--s1:#13131f;--s2:#1a1a28;--s3:#1f1f2e;
-  --b:#1e1e30;--b2:#2a2a42;
-  --acc:#00e5a0;--txt:#e8e8f0;--mu:#6b6b88;--mu2:#9090aa;
-  --gold:#f5c842;--red:#ff4466;
+  --bg:#080c14;--s1:#0d1320;--s2:#111929;--s3:#151e30;
+  --b:#1c2538;--b2:#243048;
+  --acc:#f0a500;--txt:#dde4f0;--mu:#5a6a88;--mu2:#8090b0;
+  --gold:#f0a500;--red:#e03050;
   --fn:'Segoe UI',system-ui,sans-serif;
-  --panel:#161628;--panel-2:#1d1d33;--line:#25253f;
-  --text:#ececf6;--text-dim:#9a9ab6;--accent:#5cf0c2;--accent-2:#ffd55c;
-  --pitch-green:#1d6b3a;--pitch-green-2:#1a5e34;
+  --panel:#0d1320;--panel-2:#121a2e;--line:#1c2538;
+  --text:#dde4f0;--text-dim:#7a8aaa;--accent:#7c6fff;--accent-2:#f0a500;
+  --pitch-green:#1a5c38;--pitch-green-2:#144e2e;
 }
 html,body{height:100%;background:var(--bg);overflow-x:hidden}
 body{display:flex;flex-direction:column;min-height:100vh}
@@ -248,9 +248,6 @@ tr.lb-mine td:first-child{border-left:2px solid var(--acc)}
       <div><div class="lt">HALLO AMRIKA</div><div class="ls">هاللو أمريكا · Dashboard</div></div>
     </div>
     <div class="topbar-right">
-      <button class="btn" id="refBtn" onclick="fetchAll()" title="Re-fetch all data from Supabase" style="gap:5px">
-        <span id="refBtnIcon">↻</span> <span>Refresh</span>
-      </button>
       <div id="profileBadge" class="profile-badge" title="Signed in">
         <span>👤</span>
         <span class="name" id="profileName"></span>
