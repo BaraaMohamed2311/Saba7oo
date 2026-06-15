@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard</title>
+<title>HALLO AMRIKA · Dashboard</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -328,18 +328,92 @@ const PROFILE_NAMES = [
   'الاوسطا عجلاوي','بينيصة','دكتور بروستيتس','عسكري اللوليبوب'
 ];
 
-// FIFA/IOC 3-Letter to ISO 2-Letter code mapping helper
+// FIFA/IOC 3-Letter to ISO 2-Letter code mapping helper (comprehensive)
 const countryCodeMap = {
-  "arg": "ar", "mor": "ma", "mar": "ma", "swe": "se", "sui": "ch", 
-  "nor": "no", "col": "co", "mex": "mx", "uzb": "uz", "ger": "de", 
-  "eng": "gb", "ecu": "ec", "cpv": "cv", "cod": "cd", "gha": "gh",
-  "egy": "eg", "fra": "fr", "esp": "es", "ita": "it", "bra": "br"
+  // A
+  "afg":"af","ago":"ao","alb":"al","alg":"dz","and":"ad","ang":"ao","ant":"ag",
+  "are":"ae","arg":"ar","arm":"am","aru":"aw","asa":"as","ata":"aq","atg":"ag",
+  "aus":"au","aut":"at","aze":"az",
+  // B
+  "bah":"bs","ban":"bd","bar":"bb","bdi":"bi","bel":"be","ben":"bj","ber":"bm",
+  "bfa":"bf","bhr":"bh","bhu":"bt","bih":"ba","blr":"by","blz":"bz","bol":"bo",
+  "bot":"bw","bra":"br","brn":"bn","bru":"bn","btn":"bt","bul":"bg","bur":"bf",
+  // C
+  "cam":"kh","can":"ca","cay":"ky","cgo":"cg","cha":"td","chi":"cl","chn":"cn",
+  "civ":"ci","cmr":"cm","cod":"cd","col":"co","com":"km","cpv":"cv","crc":"cr",
+  "cro":"hr","cub":"cu","cyp":"cy","cze":"cz",
+  // D
+  "den":"dk","dji":"dj","dma":"dm","dom":"do",
+  // E
+  "ecu":"ec","egy":"eg","eng":"gb","eri":"er","esp":"es","est":"ee","eth":"et",
+  // F
+  "fij":"fj","fin":"fi","fra":"fr","fsm":"fm",
+  // G
+  "gab":"ga","gam":"gm","gbr":"gb","geo":"ge","ger":"de","gha":"gh","gnb":"gw",
+  "gnq":"gq","grb":"gb","gre":"gr","grn":"gd","gua":"gt","gui":"gn","guy":"gy",
+  // H
+  "hai":"ht","hkg":"hk","hon":"hn","hun":"hu",
+  // I
+  "idn":"id","ind":"in","irl":"ie","irn":"ir","irq":"iq","isl":"is","isr":"il",
+  "ita":"it",
+  // J
+  "jam":"jm","jor":"jo","jpn":"jp",
+  // K
+  "kaz":"kz","ken":"ke","kgz":"kg","khm":"kh","kir":"ki","kna":"kn","kor":"kr",
+  "kos":"xk","kuw":"kw","kaz":"kz",
+  // L
+  "lao":"la","lba":"ly","lbn":"lb","lbr":"lr","lca":"lc","les":"ls","lib":"lb",
+  "lie":"li","ltu":"lt","lux":"lu","lva":"lv",
+  // M
+  "mac":"mo","mad":"mg","mar":"ma","mas":"my","maw":"mw","mda":"md","mdg":"mg",
+  "mdv":"mv","mex":"mx","mhl":"mh","mkd":"mk","mli":"ml","mlt":"mt","mng":"mn",
+  "mnp":"mp","mon":"mc","moz":"mz","mri":"mu","mrn":"mr","mrt":"mr","mtq":"mq",
+  "mus":"mu","mwi":"mw","mya":"mm","myo":"mm",
+  // N
+  "nam":"na","nca":"ni","ncl":"nc","ned":"nl","nep":"np","ngr":"ng","nic":"ni",
+  "niu":"nu","nld":"nl","nor":"no","npl":"np","nru":"nr","nzl":"nz",
+  // O
+  "omn":"om",
+  // P
+  "pak":"pk","pan":"pa","par":"py","per":"pe","phi":"ph","plw":"pw","png":"pg",
+  "pol":"pl","por":"pt","prk":"kp","prt":"pt","pse":"ps","pur":"pr",
+  // Q
+  "qat":"qa",
+  // R
+  "reu":"re","rou":"ro","rsa":"za","rss":"ss","rwa":"rw",
+  // S
+  "sam":"ws","sau":"sa","sco":"gb","sdn":"sd","sen":"sn","sgp":"sg","skn":"kn",
+  "slb":"sb","sle":"sl","slv":"sv","smr":"sm","sol":"sb","som":"so","srb":"rs",
+  "sri":"lk","ssd":"ss","stp":"st","sud":"sd","sui":"ch","sur":"sr","svk":"sk",
+  "svn":"si","swe":"se","swz":"sz","syr":"sy",
+  // T
+  "tab":"tt","taj":"tj","tan":"tz","tga":"to","tha":"th","tjk":"tj","tkl":"tk",
+  "tkm":"tm","tls":"tl","tog":"tg","tpe":"tw","tto":"tt","tun":"tn","tur":"tr",
+  "tuv":"tv",
+  // U
+  "uae":"ae","uga":"ug","ukr":"ua","uru":"uy","usa":"us","uzb":"uz",
+  // V
+  "van":"vu","vat":"va","ven":"ve","vie":"vn","vin":"vc","vut":"vu",
+  // W
+  "wal":"gb",
+  // Y
+  "yem":"ye",
+  // Z
+  "zam":"zm","zim":"zw",
+  // Aliases / alternates
+  "mor":"ma","moro":"ma","slo":"sk","bos":"ba","ser":"rs","cze":"cz","den":"dk",
+  "nig":"ng","cam":"cm","cam":"kh", // cameroon vs cambodia — cameroon wins (cmr preferred)
 };
 
 function getIso2Code(code3) {
   if(!code3) return "";
-  const low = code3.toLowerCase();
-  return countryCodeMap[low] || low.slice(0, 2);
+  const low = code3.toLowerCase().trim();
+  // Direct lookup first
+  if(countryCodeMap[low]) return countryCodeMap[low];
+  // If it's already a valid 2-letter ISO code, return it as-is
+  if(low.length === 2) return low;
+  // No fallback to slice — that causes wrong flags (e.g. SEN→se=Sweden)
+  return "";
 }
 
 /* ═══════════════════════════════════════════════════════════
