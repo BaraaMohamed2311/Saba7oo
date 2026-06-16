@@ -31,7 +31,7 @@ const app    = express();
 const PORT   = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' })); // Higher limit for handling arrays of full squad payloads
+app.use(express.json({ limit: '10mb' }));
 
 let db;
 async function getDb() {
@@ -56,7 +56,7 @@ app.post('/api/profile', async (req, res) => {
     const database = await getDb();
     const doc = await col(database).findOne(
       { name },
-      { projection: { _id: 0, name: 1, password: 1, squads: 1, accounts: 1, marks: 1 } }
+      { projection: { _id: 0, name: 1, password: 1, squads: 1, accounts: 1, marks: 1, transfers: 1 } }
     );
     if (!doc) return res.json({ found: false });
     return res.json({ found: true, doc });
@@ -80,7 +80,7 @@ app.post('/api/signup', async (req, res) => {
     const existing = await col(database).findOne({ name });
     if (existing) return res.status(409).json({ error: 'Profile already registered' });
 
-    await col(database).insertOne({ name, password, accounts: [], squads: [] });
+    await col(database).insertOne({ name, password, accounts: [], squads: [], transfers: {} });
     console.log('✓ Registered profile:', name);
     return res.json({ ok: true });
   } catch (e) {
@@ -89,7 +89,7 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
-// New Endpoint: Save/Sync entries back down to MongoDB
+// Save/Sync entries back down to MongoDB
 app.post('/api/save-squads', async (req, res) => {
   const { name, accounts, squads } = req.body || {};
   if (!name) return res.status(400).json({ error: 'Profile name required' });
@@ -108,7 +108,7 @@ app.post('/api/save-squads', async (req, res) => {
   }
 });
 
-// New Endpoint: Fetch combined cache groups for all profiles
+// Fetch combined cache groups for all profiles
 app.get('/api/all-profiles-data', async (req, res) => {
   try {
     const database = await getDb();
@@ -121,7 +121,6 @@ app.get('/api/all-profiles-data', async (req, res) => {
 });
 
 // Save/replace the marks array for a profile
-// Body: { name: string, marks: string[] }   — marks is an array of uid strings
 app.post('/api/save-marks', async (req, res) => {
   const { name, marks } = req.body || {};
   if (!name) return res.status(400).json({ error: 'Profile name required' });
@@ -143,6 +142,57 @@ app.post('/api/save-marks', async (req, res) => {
   }
 });
 
+// ──────────────────────────────────────────────────────
+// TRANSFER PLAN ENDPOINTS
+// Transfers are stored per profile, keyed by uid.
+// Supabase is never written — this is the only storage.
+// ──────────────────────────────────────────────────────
+
+// Save (or update) a transfer plan for a specific uid under a profile
+// Body: { name: string, uid: string, transfers: Array<{out: playerObj, in: playerObj}> }
+app.post('/api/save-transfers', async (req, res) => {
+  const { name, uid, transfers } = req.body || {};
+  if (!name || !uid) return res.status(400).json({ error: 'name and uid required' });
+  if (!ALLOWED_PROFILES.includes(name))
+    return res.status(403).json({ error: 'Unknown profile' });
+
+  try {
+    const database = await getDb();
+    // Store under transfers.<uid> so each squad's plan is independently addressable
+    await col(database).updateOne(
+      { name },
+      { $set: { [`transfers.${uid}`]: Array.isArray(transfers) ? transfers : [] } },
+      { upsert: false }
+    );
+    const count = Array.isArray(transfers) ? transfers.length : 0;
+    console.log(`✓ Saved transfer plan for profile: ${name}, uid: ${uid} (${count} swap(s))`);
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error('/api/save-transfers error:', e.message);
+    return res.status(500).json({ error: 'Database error' });
+  }
+});
+
+// Get all transfer plans saved for a profile (keyed by uid)
+// Returns: { transfers: { [uid]: [{out, in}, ...], ... } }
+app.get('/api/get-transfers/:name', async (req, res) => {
+  const { name } = req.params;
+  if (!ALLOWED_PROFILES.includes(decodeURIComponent(name)))
+    return res.status(403).json({ error: 'Unknown profile' });
+
+  try {
+    const database = await getDb();
+    const doc = await col(database).findOne(
+      { name: decodeURIComponent(name) },
+      { projection: { _id: 0, transfers: 1 } }
+    );
+    return res.json({ transfers: doc?.transfers || {} });
+  } catch (e) {
+    console.error('/api/get-transfers error:', e.message);
+    return res.status(500).json({ error: 'Database read error' });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(`\n🏆 BALLO AMRIKA auth server running on http://localhost:${PORT}`);
+  console.log(`\n🏆 HALLO AMRIKA auth server running on http://localhost:${PORT}`);
 });
