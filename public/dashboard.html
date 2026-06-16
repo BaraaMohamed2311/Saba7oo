@@ -159,6 +159,139 @@ tr.lb-mine td:first-child{border-left:2px solid var(--acc)}
 .lock-msg .lock-icon{font-size:36px;margin-bottom:6px}
 .lock-msg p{font-size:12px;line-height:1.6}
 
+/* ─── transfer simulator ─── */
+.sim-btn {
+  margin-top:8px;width:100%;background:transparent;
+  border:1px solid var(--accent);color:var(--accent);
+  padding:6px 10px;border-radius:6px;cursor:pointer;
+  font-size:10px;font-family:var(--fn);letter-spacing:.5px;
+  text-transform:uppercase;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.sim-btn:hover { background:rgba(124,111,255,.12); }
+.sim-btn.has-plan {
+  border-color:#44dd88;color:#44dd88;
+}
+.sim-btn.has-plan:hover { background:rgba(68,221,136,.1); }
+.sim-overlay {
+  position:fixed;inset:0;background:rgba(8,12,20,.97);
+  z-index:9000;display:flex;align-items:flex-start;
+  justify-content:center;padding:20px 16px 40px;overflow-y:auto;
+}
+.sim-modal {
+  background:var(--s1);border:1px solid var(--b2);border-radius:14px;
+  padding:24px 20px;width:100%;max-width:560px;margin:auto;
+  position:relative;
+}
+.sim-close {
+  position:absolute;top:12px;right:14px;background:none;border:none;
+  color:var(--mu);font-size:20px;cursor:pointer;line-height:1;
+}
+.sim-close:hover { color:var(--red); }
+.sim-title {
+  font-size:13px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;color:var(--acc);margin-bottom:3px;
+}
+.sim-sub {
+  font-size:11px;color:var(--mu);margin-bottom:18px;line-height:1.5;
+}
+.sim-step-label {
+  font-size:9px;letter-spacing:1px;text-transform:uppercase;
+  color:var(--mu);margin-bottom:8px;display:flex;align-items:center;gap:7px;
+}
+.sim-step-label::after {
+  content:'';flex:1;height:1px;background:var(--b);
+}
+.sim-progress {
+  font-size:11px;color:var(--mu2);margin-bottom:14px;
+  background:var(--s2);border-radius:6px;padding:6px 10px;
+}
+.sim-row {
+  display:flex;align-items:center;gap:8px;
+  background:var(--s2);border:1px solid var(--b);
+  border-radius:7px;padding:8px 10px;cursor:pointer;
+  margin-bottom:5px;transition:border-color .15s;
+  font-size:11px;text-align:left;width:100%;
+}
+.sim-row:hover { border-color:var(--acc); }
+.sim-row .sr-pos {
+  font-size:9px;font-weight:700;color:var(--mu2);
+  background:var(--b2);border-radius:4px;padding:2px 5px;
+  letter-spacing:.5px;white-space:nowrap;flex-shrink:0;
+}
+.sim-row .sr-flag { flex-shrink:0; }
+.sim-row .sr-name { flex:1;min-width:0;overflow:hidden; }
+.sim-row .sr-name b { display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--txt); }
+.sim-row .sr-name small { color:var(--mu);font-size:9px; }
+.sim-row .sr-pts {
+  font-size:11px;font-weight:700;flex-shrink:0;
+  color:var(--acc);white-space:nowrap;
+}
+.sim-row .sr-next {
+  font-size:9px;color:var(--mu2);flex-shrink:0;
+  white-space:nowrap;font-style:italic;
+}
+.sim-search {
+  width:100%;background:var(--s2);border:1px solid var(--b2);
+  color:var(--txt);padding:7px 10px;border-radius:6px;
+  font-size:12px;font-family:var(--fn);outline:none;
+  margin-bottom:8px;
+}
+.sim-search:focus { border-color:var(--acc); }
+.sim-search::placeholder { color:var(--mu);font-size:11px; }
+.sim-list { max-height:280px;overflow-y:auto;margin-bottom:12px; }
+.sim-list::-webkit-scrollbar { width:4px; }
+.sim-list::-webkit-scrollbar-track { background:var(--s1); }
+.sim-list::-webkit-scrollbar-thumb { background:var(--b2);border-radius:2px; }
+.sim-empty { color:var(--mu);font-size:11px;padding:12px;text-align:center;font-style:italic; }
+.sim-summary {
+  background:var(--s2);border:1px solid var(--b2);border-radius:8px;
+  padding:12px 14px;margin-bottom:12px;
+}
+.sim-swap-pair {
+  display:flex;align-items:center;gap:8px;padding:6px 0;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  font-size:11px;
+}
+.sim-swap-pair:last-child { border:none; }
+.sim-swap-side { display:flex;align-items:center;gap:5px;flex:1;min-width:0; }
+.sim-swap-side b { white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.sim-swap-arrow { color:var(--mu);font-size:13px;flex-shrink:0; }
+.sim-out-tag { font-size:9px;color:var(--red);background:rgba(224,48,80,.1);border:1px solid rgba(224,48,80,.2);border-radius:4px;padding:1px 5px; }
+.sim-in-tag  { font-size:9px;color:#44dd88;background:rgba(68,221,136,.1);border:1px solid rgba(68,221,136,.2);border-radius:4px;padding:1px 5px; }
+.sim-warn    { color:var(--mu2);font-size:10px;background:rgba(255,255,255,.04);border-radius:5px;padding:5px 8px;margin-bottom:8px; }
+.sim-actions { display:flex;gap:6px;flex-wrap:wrap; }
+.sim-reset-btn {
+  background:transparent;border:1px solid var(--b2);color:var(--mu);
+  padding:6px 12px;border-radius:6px;cursor:pointer;
+  font-size:10px;font-family:var(--fn);letter-spacing:.5px;
+  text-transform:uppercase;transition:all .15s;
+}
+.sim-reset-btn:hover { border-color:var(--red);color:var(--red); }
+.sim-save-btn {
+  background:rgba(68,221,136,.12);border:1px solid rgba(68,221,136,.35);color:#44dd88;
+  padding:6px 14px;border-radius:6px;cursor:pointer;
+  font-size:10px;font-family:var(--fn);letter-spacing:.5px;
+  text-transform:uppercase;transition:all .15s;font-weight:700;
+}
+.sim-save-btn:hover { background:rgba(68,221,136,.22); }
+.sim-save-btn:disabled { opacity:.4;cursor:default; }
+.sim-plan-label {
+  font-size:9px;font-weight:700;color:#44dd88;
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;
+}
+.sim-plan-note {
+  font-size:10px;color:var(--mu);font-style:italic;
+  background:rgba(68,221,136,.06);border:1px solid rgba(68,221,136,.15);
+  border-radius:6px;padding:6px 10px;margin-top:8px;
+}
+.sim-saved-badge {
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:9px;color:#44dd88;background:rgba(68,221,136,.1);
+  border:1px solid rgba(68,221,136,.25);border-radius:10px;
+  padding:2px 8px;margin-left:8px;vertical-align:middle;
+}
+
 @media(max-width:600px){
   .topbar{padding:10px 12px}
   .lt{font-size:11px}
@@ -256,7 +389,6 @@ tr.lb-mine td:first-child{border-left:2px solid var(--acc)}
         <span class="name" id="profileName"></span>
         <button class="logout-x" onclick="doLogout()" title="Sign out">✕</button>
       </div>
-      
     </div>
   </div>
 
@@ -360,7 +492,7 @@ const countryCodeMap = {
   "jam":"jm","jor":"jo","jpn":"jp",
   // K
   "kaz":"kz","ken":"ke","kgz":"kg","khm":"kh","kir":"ki","kna":"kn","kor":"kr",
-  "kos":"xk","kuw":"kw","kaz":"kz",
+  "kos":"xk","kuw":"kw",
   // L
   "lao":"la","lba":"ly","lbn":"lb","lbr":"lr","lca":"lc","les":"ls","lib":"lb",
   "lie":"li","ltu":"lt","lux":"lu","lva":"lv",
@@ -389,9 +521,8 @@ const countryCodeMap = {
   // T
   "tab":"tt","taj":"tj","tan":"tz","tga":"to","tha":"th","tjk":"tj","tkl":"tk",
   "tkm":"tm","tls":"tl","tog":"tg","tpe":"tw","tto":"tt","tun":"tn","tur":"tr",
-  "tuv":"tv",
   // U
-  "uae":"ae","uga":"ug","ukr":"ua","uru":"uy","usa":"us","uzb":"uz",
+  "uga":"ug","ukr":"ua","una":"ae","uru":"uy","usa":"us","uzb":"uz",
   // V
   "van":"vu","vat":"va","ven":"ve","vie":"vn","vin":"vc","vut":"vu",
   // W
@@ -401,18 +532,15 @@ const countryCodeMap = {
   // Z
   "zam":"zm","zim":"zw",
   // Aliases / alternates
-  "mor":"ma","moro":"ma","slo":"sk","bos":"ba","ser":"rs","cze":"cz","den":"dk",
-  "nig":"ng","cam":"cm","cam":"kh", // cameroon vs cambodia — cameroon wins (cmr preferred)
+  "mor":"ma","moro":"ma","slo":"sk","bos":"ba","ser":"rs","den":"dk",
+  "nig":"ng",
 };
 
 function getIso2Code(code3) {
   if(!code3) return "";
   const low = code3.toLowerCase().trim();
-  // Direct lookup first
   if(countryCodeMap[low]) return countryCodeMap[low];
-  // If it's already a valid 2-letter ISO code, return it as-is
   if(low.length === 2) return low;
-  // No fallback to slice — that causes wrong flags (e.g. SEN→se=Sweden)
   return "";
 }
 
@@ -420,8 +548,12 @@ function getIso2Code(code3) {
    STATE
 ═══════════════════════════════════════════════════════════ */
 let currentProfile = null;
-let allData = []; // Combined live/cached array 
+let allData = [];
 let allLb   = [];
+
+// Transfer plans saved to MongoDB — loaded on login, keyed by uid
+// { [uid]: [ { out: playerObj, in: playerObj }, ... ] }
+let profileTransfers = {};
 
 /* ═══════════════════════════════════════════════════════════
    STORAGE HELPERS
@@ -436,6 +568,71 @@ function getAccounts(profile){ return lsGet(accountKey(profile))||[]; }
 function saveAccounts(profile,arr){ lsSet(accountKey(profile),arr); }
 function getMarked(profile)  { return lsGet(markedKey(profile))||[]; }
 function saveMarked(profile,arr){ lsSet(markedKey(profile),arr); }
+
+/* ═══════════════════════════════════════════════════════════
+   TRANSFER PLAN — MONGODB PERSISTENCE
+   Supabase is never written. Plans are stored per profile+uid.
+═══════════════════════════════════════════════════════════ */
+
+// Load all transfer plans for the current profile from MongoDB
+async function loadTransfersFromMongo(profile) {
+  try {
+    const res = await fetch(`${AUTH_API}/api/get-transfers/${encodeURIComponent(profile)}`);
+    if (!res.ok) return;
+    const json = await res.json();
+    profileTransfers = json.transfers || {};
+  } catch(e) {
+    console.warn('[transfers] load failed:', e.message);
+    profileTransfers = {};
+  }
+}
+
+// Save one uid's transfer plan to MongoDB (serialises only the needed fields)
+async function saveTransfersToMongo(uid, swaps) {
+  if (!currentProfile) return false;
+  // Serialise: keep only the fields needed to render the summary
+  const payload = swaps.map(s => ({
+    out: s.out ? {
+      name: s.out.name || '',
+      shirt_name: s.out.shirt_name || '',
+      nation: s.out.nation || '',
+      nation_code: s.out.nation_code || s.out.code || '',
+      club: s.out.club || '',
+      role: s.out.role || '',
+      roles: s.out.roles || [],
+      slot: s.out.slot ?? null,
+      wild: !!s.out.wild,
+      arab: !!s.out.arab,
+      tag: s.out.tag || '',
+    } : null,
+    in: s.in ? {
+      name: s.in.name || '',
+      shirt_name: s.in.shirt_name || '',
+      nation: s.in.nation || '',
+      nation_code: s.in.nation_code || s.in.code || '',
+      club: s.in.club || '',
+      role: s.in.role || '',
+      roles: s.in.roles || [],
+      wild: !!s.in.wild,
+      arab: !!s.in.arab,
+      tag: s.in.tag || '',
+    } : null,
+  })).filter(s => s.out && s.in);
+
+  try {
+    const res = await fetch(`${AUTH_API}/api/save-transfers`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ name: currentProfile, uid, transfers: payload }),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    profileTransfers[uid] = payload;
+    return true;
+  } catch(e) {
+    console.error('[transfers] save failed:', e.message);
+    return false;
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════
    MONGO DATA EXCHANGE SYNC
@@ -462,7 +659,6 @@ async function mongoInsert(doc){
   return j;
 }
 
-// Push local live changes down to MongoDB Atlas
 async function syncSquadsToMongo(profile, accountsList, dataPayload) {
   try {
     await fetch(`${AUTH_API}/api/save-squads`, {
@@ -475,7 +671,6 @@ async function syncSquadsToMongo(profile, accountsList, dataPayload) {
   }
 }
 
-// Gather snapshot details of all structural groups registered across fallback users
 async function loadAllProfilesFromMongo() {
   try {
     const res = await fetch(`${AUTH_API}/api/all-profiles-data`);
@@ -516,8 +711,7 @@ async function doLogin(){
     document.getElementById('authSpinner').style.display = 'none';
     if (!doc) { errEl.textContent = 'Profile not registered yet.'; return; }
     if (doc.password !== password) { errEl.textContent = 'Incorrect password.'; return; }
-    
-    // Bootstrap accounts back from mongo document properties if local storage is blank
+
     if(doc.accounts && doc.accounts.length > 0) {
       saveAccounts(profile, doc.accounts);
     }
@@ -571,8 +765,10 @@ function activateSession(profile){
   document.getElementById('authOverlay').style.display = 'none';
   document.getElementById('app').style.display = '';
   renderAccounts();
-  
-  // Seed basic UI views instantly using structural groupings saved on Mongo
+
+  // Load transfer plans from MongoDB in the background (non-blocking)
+  loadTransfersFromMongo(profile).catch(() => {});
+
   loadProfileGroupsFromCache();
 }
 
@@ -580,6 +776,7 @@ function doLogout(){
   lsDel('ha-session');
   currentProfile = null;
   allData = []; allLb = [];
+  profileTransfers = {};
   document.getElementById('authOverlay').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   authTab('login');
@@ -668,7 +865,7 @@ function st(msg,loading=false,ok=false,err=false){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   SUPABASE LIVE DATA CAPTURE ROUTINES
+   SUPABASE LIVE DATA CAPTURE ROUTINES (read-only)
 ═══════════════════════════════════════════════════════════ */
 async function sbFetch(path){
   const r=await fetch(`${SB_URL}/rest/v1/${path}`,{
@@ -688,17 +885,13 @@ async function rpc(fn,body){
   return r.json();
 }
 
-// Initial structural grouping view loader using database data snapshots
 async function loadProfileGroupsFromCache() {
   const profileDocs = await loadAllProfilesFromMongo();
   allData = [];
-  
+
   for(const pDoc of profileDocs) {
     if (pDoc.squads && pDoc.squads.length > 0) {
-      // Push each parsed squad payload into global data array instance
-      pDoc.squads.forEach(sq => {
-        allData.push(sq);
-      });
+      pDoc.squads.forEach(sq => { allData.push(sq); });
     }
   }
   buildLeaderboardArray();
@@ -717,7 +910,6 @@ function buildLeaderboardArray() {
       _ownerLabel: d.account.label,
       _profile:    d.account.profile,
     }));
-  // Deduplicate entries by checking unique user_id paths
   const uniqueMap = {};
   allLb = allLb.filter(item => {
     if(uniqueMap[item.user_id]) return false;
@@ -739,18 +931,15 @@ async function fetchAll(){
   if (refIcon) refIcon.style.animation = 'spin .6s linear infinite';
 
   try {
-    // ── Step 1: Load all profiles' stored accounts from MongoDB ──────────────
     st('Loading all profiles from database…', true);
     const profileDocs = await loadAllProfilesFromMongo();
 
-    // Build map: profileName → accounts[]
     const profileAccountMap = {};
     for (const pDoc of profileDocs) {
       if (pDoc.name && Array.isArray(pDoc.accounts) && pDoc.accounts.length > 0) {
         profileAccountMap[pDoc.name] = pDoc.accounts;
       }
     }
-    // Always merge current profile's local accounts (may not be synced yet)
     const localAccounts = getAccounts(currentProfile);
     if (localAccounts.length > 0) {
       const existing = profileAccountMap[currentProfile] || [];
@@ -771,7 +960,6 @@ async function fetchAll(){
     const totalAccounts = profileNames.reduce((s,p) => s + profileAccountMap[p].length, 0);
     st(`Fetching ${totalAccounts} account(s) across ${profileNames.length} profile(s)…`, true);
 
-    // ── Step 2: Refetch every UID from Supabase for every profile in parallel ─
     await Promise.all(profileNames.map(async profileName => {
       const accounts = profileAccountMap[profileName];
 
@@ -785,20 +973,19 @@ async function fetchAll(){
       }));
 
       const validSquads = freshSquads.filter(d => d.entry || d.rankRow);
-
-      // ── Step 3: Save fresh data back to MongoDB for this profile ─────────
       await syncSquadsToMongo(profileName, accounts, validSquads);
     }));
 
-    // ── Step 4: Re-hydrate marks from MongoDB for current profile ────────────
     try {
       const freshDoc = await mongoFind({ name: currentProfile });
       if (freshDoc && Array.isArray(freshDoc.marks) && freshDoc.marks.length > 0) {
         saveMarked(currentProfile, freshDoc.marks);
       }
-    } catch(e) { /* non-fatal */ }
+    } catch(e) {}
 
-    // ── Step 5: Reload from MongoDB and re-render ─────────────────────────────
+    // Reload transfer plans after refresh
+    await loadTransfersFromMongo(currentProfile);
+
     await loadProfileGroupsFromCache();
     st(`All ${totalAccounts} accounts refreshed · ${new Date().toLocaleTimeString()}`, false, true);
     tab('squads');
@@ -806,7 +993,6 @@ async function fetchAll(){
   } catch(err) {
     st(`Error: ${err.message}`, false, false, true);
   } finally {
-    // Always re-enable regardless of success or failure
     fetchBtn.disabled = false;
     refBtn.disabled   = false;
     if (refIcon) refIcon.style.animation = '';
@@ -829,7 +1015,7 @@ function renderOverview(){
   const totalPool=totals.length?Math.max(...totals):null;
   const topPts   =pts.length?Math.max(...pts):null;
   const pct=(bestRank&&totalPool)?Math.round((1-(bestRank-1)/totalPool)*100)+'%':'—';
-  
+
   document.getElementById('statsGrid').innerHTML=`
     <div class="sc"><div class="sn">${allData.length}</div><div class="sl">Total Tracked Squads</div></div>
     <div class="sc"><div class="sn">${bestRank?'#'+bestRank:'—'}</div><div class="sl">Best Rank</div></div>
@@ -861,7 +1047,7 @@ function renderSquads(){
 
   const groups={};
   PROFILE_NAMES.forEach(p => groups[p]=[]);
-  
+
   allData.forEach(d => {
     const p = d.account?.profile;
     if (groups[p]) groups[p].push(d);
@@ -928,6 +1114,11 @@ function renderPitchCard({account,entry,rankRow,scores}, canEdit){
 
   const markDisabled = canEdit ? '' : 'disabled title="You can only mark your own squads"';
 
+  // Check if this uid already has a saved transfer plan
+  const hasPlan = canEdit && profileTransfers[account.uid] && profileTransfers[account.uid].length > 0;
+  const simBtnClass = hasPlan ? 'sim-btn has-plan' : 'sim-btn';
+  const simBtnLabel = hasPlan ? '✓ Transfer Plan Saved' : '⚡ Decide My Transfers';
+
   return `<div class="my-squad-card${marked?' marked':''}" data-uid="${esc(account.uid)}" data-profile="${esc(account.profile)}">
     <div class="squad-card-label">${esc(account.label)}</div>
     <div class="squad-card-header">
@@ -947,6 +1138,7 @@ function renderPitchCard({account,entry,rankRow,scores}, canEdit){
       onclick="toggleMark('${esc(account.profile)}','${esc(account.uid)}')">
       <span class="star">${marked?'★':'☆'}</span> ${marked?'Marked':'Mark'}
     </button>
+    ${canEdit ? `<button class="${simBtnClass}" onclick="openSimModal('${esc(account.uid)}')">${simBtnLabel}</button>` : ''}
   </div>`;
 }
 
@@ -975,10 +1167,7 @@ function buildPitch(starters, wild, scores, entry){
       else if(tag==='CB') pos={left:63,top:72};
     }
     const name=p.shirt_name||p.name||'?';
-    
-    // Convert 3-letter country flags to lowercase ISO 2-letter format for flagcdn
     const iso2Country = getIso2Code(p.nation_code);
-    
     const ppts=entry?calcPlayerPts(p.name||name,scores):null;
     const ptsStr=ppts!==null?`${ppts>=0?'+':''}${ppts}`:'';
     const ptsHtml=ppts!==null&&ppts!==0?`<div class="ps-pts ${ptsClass(ppts)}">${ptsStr}</div>`:'';
@@ -998,7 +1187,7 @@ function buildPitch(starters, wild, scores, entry){
       <div class="bench-label">BENCH · Wildcard</div>
       <div class="bench-slot">
         <span>
-          ${wildIso2 ? `<img class="flag-img" src="https://flagcdn.com/w20/${wildIso2}.png" alt="">` : `<span class="flag-img-fallback"></span>`} 
+          ${wildIso2 ? `<img class="flag-img" src="https://flagcdn.com/w20/${wildIso2}.png" alt="">` : `<span class="flag-img-fallback"></span>`}
           <b>${esc(wild.shirt_name||wild.name||'?')}</b>
           <span style="color:var(--text-dim);font-size:11px;">${esc(wild.club||'')}</span>
         </span>
@@ -1054,6 +1243,459 @@ function calcPlayerPts(name,scores){
 }
 function ptsClass(n){return n>0?'pos':n<0?'neg':'zero';}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+
+/* ═══════════════════════════════════════════════════════════
+   TRANSFER SIMULATOR — "Decide My Transfers"
+   - Reads squad data from Supabase (read-only)
+   - Reads players pool + fixtures from halloamrika.saba7okorah.com (read-only)
+   - Saves transfer plans ONLY to MongoDB via /api/save-transfers
+   - Nothing is written to Supabase
+═══════════════════════════════════════════════════════════ */
+let simPlayerPts  = null;
+let simPlayersPool = null;
+let simFixtures   = [];
+let simLeague     = null;
+
+const NATION_CAP = 3;
+
+async function loadSimPlayerPts() {
+  if (simPlayerPts) return simPlayerPts;
+  try {
+    const r = await sbFetch(
+      'player_leaderboard?select=player_name,total_points&order=total_points.desc&limit=2000'
+    );
+    simPlayerPts = {};
+    for (const row of r || []) simPlayerPts[row.player_name] = row.total_points;
+  } catch(e) {
+    simPlayerPts = {};
+  }
+  return simPlayerPts;
+}
+
+async function loadSimPlayersPool() {
+  if (simPlayersPool) return simPlayersPool;
+  try {
+    const r = await fetch('https://halloamrika.saba7okorah.com/data/players.json');
+    if (!r.ok) throw new Error('players.json not reachable');
+    const data = await r.json();
+    simPlayersPool = [];
+    for (const nation of (data.nations || [])) {
+      const code = nation.code || '';
+      for (const p of (nation.players || [])) {
+        simPlayersPool.push({
+          ...p,
+          nation: nation.name,
+          nation_code: code,
+          arab: nation.arab === true,
+          category: nation.category,
+        });
+      }
+    }
+  } catch(e) {
+    console.warn('[sim] players.json load failed:', e.message);
+    simPlayersPool = [];
+  }
+  return simPlayersPool;
+}
+
+async function loadSimFixtures() {
+  if (simFixtures.length) return simFixtures;
+  try {
+    const r = await fetch('https://halloamrika.saba7okorah.com/data/fixtures.json');
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    simFixtures = data.fixtures || [];
+  } catch(e) {
+    simFixtures = [];
+  }
+  return simFixtures;
+}
+
+async function loadSimLeague() {
+  if (simLeague) return simLeague;
+  try {
+    const r = await sbFetch(`leagues?select=id,transfers_open_until&id=eq.${LEAGUE_ID}&limit=1`);
+    simLeague = r?.[0] || {};
+  } catch(e) {
+    simLeague = {};
+  }
+  return simLeague;
+}
+
+const FIXTURE_ALIAS = {
+  'DR Congo':'Congo DR','Cape Verde':'Cape Verde Islands',
+  'Bosnia and Herzegovina':'Bosnia & Herzegovina',
+  'Turkey':'Türkiye','United States':'USA',
+};
+function simNextGame(nation) {
+  const fxNation = FIXTURE_ALIAS[nation] || nation;
+  const txClose  = simLeague?.transfers_open_until
+    ? new Date(simLeague.transfers_open_until)
+    : new Date();
+  const isN = f => f.home === fxNation || f.away === fxNation;
+  const match = simFixtures.find(f => isN(f) && new Date(f.date) >= txClose)
+    || simFixtures.find(f => isN(f) && new Date(f.date) > new Date());
+  if (!match) return null;
+  const opp = match.home === fxNation ? match.away : match.home;
+  return `vs ${opp}`;
+}
+
+/* ── Main modal entry point ── */
+async function openSimModal(uid) {
+  const squadData = allData.find(d => d.account.uid === uid && d.account.profile === currentProfile);
+  if (!squadData) { st('Squad data not found — try Fetch Live Data first.', false, false, true); return; }
+
+  const { entry } = squadData;
+  if (!entry) { st('No entry data for this squad.', false, false, true); return; }
+
+  st('Loading transfer simulator data…', true);
+  await Promise.all([
+    loadSimPlayerPts(),
+    loadSimPlayersPool(),
+    loadSimFixtures(),
+    loadSimLeague(),
+  ]);
+  st('Ready', false, true);
+
+  const xi = parseXI(entry);
+
+  // Pre-load any saved plan for this uid. Swaps here are plain serialised objects
+  // (not references to xi), which is fine — summary rendering only needs name/nation/pts.
+  const savedPlan = profileTransfers[uid] || [];
+  const swaps = savedPlan.length > 0
+    ? savedPlan.map(s => ({ out: s.out, in: s.in }))  // shallow copies of saved data
+    : [];
+
+  // 'out' | 'in' | 'done'
+  let simStep = savedPlan.length > 0 ? 'done' : 'out';
+
+  // Track whether the current plan state matches what's in MongoDB
+  let isDirty = false; // becomes true when user modifies after loading a saved plan
+
+  const overlay = document.createElement('div');
+  overlay.className = 'sim-overlay';
+
+  const savedBadge = savedPlan.length > 0
+    ? `<span class="sim-saved-badge">💾 Saved plan loaded</span>`
+    : '';
+
+  overlay.innerHTML = `
+    <div class="sim-modal" id="simModal">
+      <button class="sim-close" id="simClose" title="Close">✕</button>
+      <div class="sim-title">⚡ Decide My Transfers ${savedBadge}</div>
+      <div class="sim-sub">
+        Plan your transfers for this squad. Your plan is saved to your profile in MongoDB —
+        nothing is written to the platform.
+      </div>
+      <div id="simBody"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.getElementById('simClose').onclick = () => overlay.remove();
+
+  /* ── Helpers ── */
+  function flagHtml(code, size=20) {
+    const iso2 = getIso2Code(code);
+    return iso2
+      ? `<img src="https://flagcdn.com/w${size}/${iso2}.png" style="width:${size}px;height:auto;border-radius:2px;vertical-align:middle;" alt="">`
+      : `<span style="display:inline-block;width:${size}px;height:${Math.round(size*0.67)}px;background:var(--b2);border-radius:2px;vertical-align:middle;"></span>`;
+  }
+
+  function ptsLabel(n) {
+    if (!n && n !== 0) return '<span style="color:var(--mu)">—</span>';
+    return `<span style="color:${n > 0 ? 'var(--acc)' : n < 0 ? 'var(--red)' : 'var(--mu)'}">${n > 0 ? '+' : ''}${n}</span>`;
+  }
+
+  function rowHtml(p, isOut) {
+    const pos  = p.wild ? 'WILD' : (p.role || (p.roles && p.roles[0]) || '?');
+    const name = p.shirt_name || (p.name || '?').split(' ')[0];
+    const club = p.club || '';
+    const nat  = p.nation || '';
+    const ptv  = simPlayerPts?.[p.name] ?? null;
+    const next = simNextGame(p.nation);
+    const dataAttr = isOut
+      ? `data-slot="${p.slot ?? ''}" data-wild="${p.wild ? 1 : 0}"`
+      : `data-id="${esc((p.no||'')+'|'+nat+'|'+(p.name||''))}"`;
+    return `<button class="sim-row" ${dataAttr}>
+      <span class="sr-pos">${esc(pos)}</span>
+      <span class="sr-flag">${flagHtml(p.nation_code || p.code || '', 20)}</span>
+      <span class="sr-name">
+        <b>${esc(name)}</b>
+        <small>${esc([nat, club].filter(Boolean).join(' · '))}</small>
+      </span>
+      <span class="sr-pts">${ptsLabel(ptv)}</span>
+      ${next ? `<span class="sr-next">${esc(next)}</span>` : ''}
+    </button>`;
+  }
+
+  /* Compare players by name + nation (avoids identity issues with saved vs xi objects) */
+  function playerMatch(a, b) {
+    return (a.name || '') === (b.name || '') && (a.nation || '') === (b.nation || '');
+  }
+
+  /* Current simulated XI accounting for applied swaps */
+  function currentXI() {
+    return xi.map(p => {
+      const s = swaps.find(sw => playerMatch(sw.out, p));
+      return s ? s.in : p;
+    });
+  }
+
+  /* ── Render: pick OUT player from current squad ── */
+  function renderPickOut() {
+    const eligible = xi.filter(p => !swaps.some(s => playerMatch(s.out, p)));
+    const body = document.getElementById('simBody');
+    body.innerHTML = `
+      <div class="sim-progress">
+        ${swaps.length === 0 ? 'Choose a player to swap OUT (1 of 2)' : 'Choose another player to swap OUT (2 of 2)'}
+      </div>
+      ${renderSummaryIfAny()}
+      <div class="sim-step-label">Current squad — tap to transfer out</div>
+      <div class="sim-list" id="simOutList">
+        ${eligible.map(p => rowHtml(p, true)).join('') || '<div class="sim-empty">No players available.</div>'}
+      </div>
+      <div class="sim-actions">
+        ${swaps.length > 0 ? '<button class="sim-reset-btn" id="simResetBtn">↺ Reset all</button>' : ''}
+        ${swaps.length === 1 ? '<button class="sim-reset-btn" id="simSkipBtn" style="border-color:var(--acc);color:var(--acc)">✓ Keep second slot</button>' : ''}
+      </div>
+    `;
+    body.querySelectorAll('#simOutList .sim-row').forEach(btn => {
+      btn.onclick = () => {
+        const slot = btn.dataset.slot;
+        const isWild = btn.dataset.wild === '1';
+        const pick = xi.find(p =>
+          String(p.slot ?? '') === String(slot) && (!!p.wild) === isWild
+        );
+        if (!pick) return;
+        swaps.push({ out: pick, in: null });
+        isDirty = true;
+        simStep = 'in';
+        renderPickIn();
+      };
+    });
+    if (document.getElementById('simResetBtn'))
+      document.getElementById('simResetBtn').onclick = () => {
+        swaps.length = 0; isDirty = true; simStep = 'out'; renderPickOut();
+      };
+    if (document.getElementById('simSkipBtn'))
+      document.getElementById('simSkipBtn').onclick = () => { simStep = 'done'; renderDone(); };
+  }
+
+  /* ── Render: pick IN replacement ── */
+  function renderPickIn() {
+    const current = swaps[swaps.length - 1];
+    const out     = current.out;
+    const body    = document.getElementById('simBody');
+    const pool    = simPlayersPool;
+
+    /* Constraints — same logic as team.html transfer modal */
+    const inUseIds = new Set();
+    for (const p of xi)    inUseIds.add((p.no||'')+'|'+(p.nation||'')+'|'+(p.name||''));
+    for (const s of swaps) if (s.in) inUseIds.add((s.in.no||'')+'|'+(s.in.nation||'')+'|'+(s.in.name||''));
+
+    const futureSquad = xi.map(p => {
+      const s = swaps.find(sw => playerMatch(sw.out, p));
+      return s?.in || p;
+    });
+    const arabsAfter  = futureSquad.filter(p => !playerMatch(p, out) && p.arab).length;
+    const mustBeArab  = arabsAfter === 0;
+
+    const nationCount = {};
+    for (const p of futureSquad) {
+      if (playerMatch(p, out)) continue;
+      nationCount[p.nation] = (nationCount[p.nation] || 0) + 1;
+    }
+
+    const wildSlot = !!out.wild;
+    const requiredRoles = wildSlot ? null : new Set([out.role, ...(out.roles || [])].filter(Boolean));
+
+    function filteredCandidates(q) {
+      return (pool || []).filter(p => {
+        const id = (p.no||'')+'|'+(p.nation||'')+'|'+(p.name||'');
+        if (inUseIds.has(id)) return false;
+        if (mustBeArab && !p.arab) return false;
+        if ((nationCount[p.nation] || 0) >= NATION_CAP) return false;
+        if (requiredRoles) {
+          const roles = new Set((p.roles || [p.role]).filter(Boolean));
+          if (![...requiredRoles].some(r => roles.has(r))) return false;
+        }
+        if (q) {
+          const ql = q.toLowerCase();
+          if (!(p.name||'').toLowerCase().includes(ql) && !(p.club||'').toLowerCase().includes(ql)) return false;
+        }
+        return true;
+      }).sort((a,b) => (simPlayerPts?.[b.name] || 0) - (simPlayerPts?.[a.name] || 0));
+    }
+
+    body.innerHTML = `
+      <div class="sim-progress">
+        Replacing <b>${esc(out.shirt_name || (out.name||'?').split(' ')[0])}</b>
+        (${esc(out.nation || '—')})
+        — pick swap ${swaps.length} of 2
+      </div>
+      ${mustBeArab ? `<div class="sim-warn">⚠️ Must pick an Arab player (no Arabs left after this OUT)</div>` : ''}
+      ${renderSummaryIfAny()}
+      <div class="sim-step-label">Choose replacement</div>
+      <input class="sim-search" id="simSearch" placeholder="Search by name or club…" autocomplete="off">
+      <div class="sim-list" id="simInList"></div>
+      <div class="sim-actions">
+        <button class="sim-reset-btn" id="simBackBtn">← Back</button>
+        <button class="sim-reset-btn" id="simResetBtn2">↺ Reset all</button>
+      </div>
+    `;
+
+    function renderInList(q) {
+      const cands = filteredCandidates(q);
+      const list  = document.getElementById('simInList');
+      if (!list) return;
+      if (!cands.length) {
+        list.innerHTML = `<div class="sim-empty">${mustBeArab ? 'No Arab players available for this role.' : 'No eligible players found.'}</div>`;
+        return;
+      }
+      list.innerHTML = cands.slice(0, 80).map(p => rowHtml(p, false)).join('');
+      list.querySelectorAll('.sim-row').forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.dataset.id;
+          const pick = cands.find(p => ((p.no||'')+'|'+(p.nation||'')+'|'+(p.name||'')) === id);
+          if (!pick) return;
+          swaps[swaps.length - 1].in = pick;
+          isDirty = true;
+          if (swaps.length < 2) {
+            simStep = 'out';
+            renderPickOut();
+          } else {
+            simStep = 'done';
+            renderDone();
+          }
+        };
+      });
+    }
+
+    renderInList('');
+    document.getElementById('simSearch').addEventListener('input', e => renderInList(e.target.value.trim()));
+    document.getElementById('simBackBtn').onclick = () => {
+      swaps.pop(); simStep = 'out'; renderPickOut();
+    };
+    document.getElementById('simResetBtn2').onclick = () => {
+      swaps.length = 0; isDirty = true; simStep = 'out'; renderPickOut();
+    };
+  }
+
+  /* ── Render: plan summary + save ── */
+  function renderDone() {
+    const body = document.getElementById('simBody');
+    const hasSwaps = swaps.length > 0 && swaps.every(s => s.out && s.in);
+    const alreadySaved = !isDirty && savedPlan.length > 0;
+
+    body.innerHTML = `
+      <div class="sim-plan-label">✓ Your transfer plan</div>
+      ${renderSummaryIfAny()}
+      ${!hasSwaps ? `<div class="sim-empty" style="margin:10px 0">No swaps planned yet.</div>` : ''}
+      <div class="sim-plan-note">
+        This plan is saved to your profile only — it has no effect on the platform.
+        Use it to think through your options before making actual transfers.
+      </div>
+      <div class="sim-actions" style="margin-top:12px">
+        <button class="sim-reset-btn" id="simResetFinal">↺ Start over</button>
+        ${hasSwaps ? `<button class="sim-save-btn" id="simSaveBtn">${alreadySaved ? '💾 Plan saved' : '💾 Save plan'}</button>` : ''}
+        <button class="sim-reset-btn" style="border-color:var(--b2);margin-left:auto" id="simCloseBtn">Close</button>
+      </div>
+      <div id="simSaveMsg" style="font-size:10px;color:var(--mu);margin-top:8px;min-height:16px"></div>
+    `;
+
+    if (alreadySaved && document.getElementById('simSaveBtn')) {
+      document.getElementById('simSaveBtn').disabled = true;
+    }
+
+    document.getElementById('simResetFinal').onclick = () => {
+      swaps.length = 0; isDirty = true; simStep = 'out'; renderPickOut();
+    };
+    document.getElementById('simCloseBtn').onclick = () => overlay.remove();
+
+    const saveBtn = document.getElementById('simSaveBtn');
+    if (saveBtn) {
+      saveBtn.onclick = async () => {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving…';
+        const msgEl = document.getElementById('simSaveMsg');
+        const ok = await saveTransfersToMongo(uid, swaps);
+        if (ok) {
+          saveBtn.textContent = '✓ Saved';
+          saveBtn.style.borderColor = '#44dd88';
+          saveBtn.style.color = '#44dd88';
+          isDirty = false;
+          if (msgEl) msgEl.innerHTML = '<span style="color:#44dd88">Plan saved to your profile.</span>';
+          // Update the pitch card button label
+          const cardBtn = document.querySelector(
+            `.my-squad-card[data-uid="${CSS.escape(uid)}"] .sim-btn`
+          );
+          if (cardBtn) {
+            cardBtn.className = 'sim-btn has-plan';
+            cardBtn.textContent = '✓ Transfer Plan Saved';
+          }
+        } else {
+          saveBtn.disabled = false;
+          saveBtn.textContent = '💾 Save plan';
+          if (msgEl) msgEl.innerHTML = '<span style="color:var(--red)">Save failed — check server connection.</span>';
+        }
+      };
+    }
+  }
+
+  /* ── Inline mini-summary of swaps so far ── */
+  function renderSummaryIfAny() {
+    if (!swaps.length) return '';
+    const rows = swaps.map(s => {
+      const outName = s.out.shirt_name || (s.out.name||'?').split(' ')[0];
+      const inName  = s.in  ? (s.in.shirt_name  || (s.in.name||'?').split(' ')[0]) : '…';
+      const outPts  = simPlayerPts?.[s.out.name] ?? null;
+      const inPts   = s.in ? (simPlayerPts?.[s.in.name] ?? null) : null;
+      const diff    = (outPts !== null && inPts !== null) ? inPts - outPts : null;
+      const diffHtml = diff !== null
+        ? `<span style="font-size:10px;color:${diff>0?'#44dd88':diff<0?'var(--red)':'var(--mu)'}">
+            (${diff>0?'+':''}${diff} pts)
+           </span>`
+        : '';
+      const outNext = simNextGame(s.out.nation);
+      const inNext  = s.in ? simNextGame(s.in.nation) : null;
+      return `<div class="sim-swap-pair">
+        <div class="sim-swap-side">
+          <span class="sim-out-tag">OUT</span>
+          ${s.out.nation_code ? `<img src="https://flagcdn.com/w20/${getIso2Code(s.out.nation_code)}.png" style="width:16px;height:auto;border-radius:2px;" alt="">` : ''}
+          <span style="min-width:0;overflow:hidden">
+            <b>${esc(outName)}</b>
+            ${outPts !== null ? `<span style="font-size:9px;color:var(--mu);margin-left:3px">${outPts > 0 ? '+' : ''}${outPts}</span>` : ''}
+            ${outNext ? `<span style="font-size:9px;color:var(--mu2);margin-left:3px;font-style:italic">${esc(outNext)}</span>` : ''}
+          </span>
+        </div>
+        <span class="sim-swap-arrow">→</span>
+        <div class="sim-swap-side">
+          <span class="sim-in-tag">${s.in ? 'IN' : '…'}</span>
+          ${s.in && s.in.nation_code ? `<img src="https://flagcdn.com/w20/${getIso2Code(s.in.nation_code)}.png" style="width:16px;height:auto;border-radius:2px;" alt="">` : ''}
+          <span style="min-width:0;overflow:hidden">
+            <b>${esc(inName)}</b>
+            ${inPts !== null ? `<span style="font-size:9px;color:var(--mu);margin-left:3px">${inPts > 0 ? '+' : ''}${inPts}</span>` : ''}
+            ${diffHtml}
+            ${inNext ? `<span style="font-size:9px;color:var(--mu2);margin-left:3px;font-style:italic">${esc(inNext)}</span>` : ''}
+          </span>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="sim-summary">
+      <div class="sim-step-label">Plan so far</div>
+      ${rows}
+    </div>`;
+  }
+
+  /* Kick off */
+  if (simStep === 'done') {
+    renderDone();
+  } else {
+    renderPickOut();
+  }
+}
 
 checkSession();
 </script>
