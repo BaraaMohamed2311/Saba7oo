@@ -1675,7 +1675,7 @@ async function openSimModal(uid) {
           <span class="sim-out-tag">OUT</span>
           ${s.out.nation_code ? `<img src="https://flagcdn.com/w20/${getIso2Code(s.out.nation_code)}.png" style="width:16px;height:auto;border-radius:2px;" alt="">` : ''}
           <span style="min-width:0;overflow:hidden">
-            <b>${esc(outName)}</b>
+            <b style="color:white">${esc(outName)}</b>
             ${outPts !== null ? `<span style="font-size:9px;color:var(--mu);margin-left:3px">${outPts > 0 ? '+' : ''}${outPts}</span>` : ''}
             ${outNext ? `<span style="font-size:9px;color:var(--mu2);margin-left:3px;font-style:italic">${esc(outNext)}</span>` : ''}
           </span>
@@ -1685,7 +1685,7 @@ async function openSimModal(uid) {
           <span class="sim-in-tag">${s.in ? 'IN' : '…'}</span>
           ${s.in && s.in.nation_code ? `<img src="https://flagcdn.com/w20/${getIso2Code(s.in.nation_code)}.png" style="width:16px;height:auto;border-radius:2px;" alt="">` : ''}
           <span style="min-width:0;overflow:hidden">
-            <b>${esc(inName)}</b>
+            <b style="color:white">${esc(inName)}</b>
             ${inPts !== null ? `<span style="font-size:9px;color:var(--mu);margin-left:3px">${inPts > 0 ? '+' : ''}${inPts}</span>` : ''}
             ${diffHtml}
             ${inNext ? `<span style="font-size:9px;color:var(--mu2);margin-left:3px;font-style:italic">${esc(inNext)}</span>` : ''}
