@@ -1275,12 +1275,28 @@ async function loadSimPlayerPts() {
 async function loadSimPlayersPool() {
   if (simPlayersPool) return simPlayersPool;
   try {
-    const r = await fetch('https://halloamrika.saba7okorah.com/data/players.json');
-    if (!r.ok) throw new Error('players.json not reachable');
-    const data = await r.json();
+    // Fetch both in parallel. teams.json provides the ISO-2 flag code per nation;
+    // players.json provides the player list. Mirrors exactly what team.html does.
+    const [playersRes, teamsRes] = await Promise.all([
+      fetch('https://halloamrika.saba7okorah.com/data/players.json'),
+      fetch('https://halloamrika.saba7okorah.com/data/teams.json').catch(() => null),
+    ]);
+    if (!playersRes.ok) throw new Error('players.json not reachable');
+    const playersData = await playersRes.json();
+
+    // Build a nation-name → { code } map from teams.json (ISO-2 codes live here)
+    const teamsMap = {};
+    if (teamsRes && teamsRes.ok) {
+      const teamsData = await teamsRes.json();
+      for (const tm of (teamsData.teams || [])) {
+        teamsMap[tm.name] = tm;
+      }
+    }
+
     simPlayersPool = [];
-    for (const nation of (data.nations || [])) {
-      const code = nation.code || '';
+    for (const nation of (playersData.nations || [])) {
+      // Prefer the ISO-2 code from teams.json; fall back to whatever players.json has
+      const code = teamsMap[nation.name]?.code || nation.code || '';
       for (const p of (nation.players || [])) {
         simPlayersPool.push({
           ...p,
@@ -1292,7 +1308,7 @@ async function loadSimPlayersPool() {
       }
     }
   } catch(e) {
-    console.warn('[sim] players.json load failed:', e.message);
+    console.warn('[sim] players pool load failed:', e.message);
     simPlayersPool = [];
   }
   return simPlayersPool;
@@ -1416,7 +1432,7 @@ async function openSimModal(uid) {
     const next = simNextGame(p.nation);
     const dataAttr = isOut
       ? `data-slot="${p.slot ?? ''}" data-wild="${p.wild ? 1 : 0}"`
-      : `data-id="${esc((p.no||'')+'|'+nat+'|'+(p.name||''))}"`;
+      : `data-id="${esc((p.name||'')+'|'+(nat||''))}"`;
     return `<button class="sim-row" ${dataAttr}>
       <span class="sr-pos">${esc(pos)}</span>
       <span class="sr-flag">${flagHtml(p.nation_code || p.code || '', 20)}</span>
@@ -1489,10 +1505,11 @@ async function openSimModal(uid) {
     const body    = document.getElementById('simBody');
     const pool    = simPlayersPool;
 
-    /* Constraints — same logic as team.html transfer modal */
+    /* Constraints — same logic as team.html transfer modal.
+       Match in-use players by name+nation (xi_json from Supabase may not carry `no`). */
     const inUseIds = new Set();
-    for (const p of xi)    inUseIds.add((p.no||'')+'|'+(p.nation||'')+'|'+(p.name||''));
-    for (const s of swaps) if (s.in) inUseIds.add((s.in.no||'')+'|'+(s.in.nation||'')+'|'+(s.in.name||''));
+    for (const p of xi)    inUseIds.add((p.name||'')+'|'+(p.nation||''));
+    for (const s of swaps) if (s.in) inUseIds.add((s.in.name||'')+'|'+(s.in.nation||''));
 
     const futureSquad = xi.map(p => {
       const s = swaps.find(sw => playerMatch(sw.out, p));
@@ -1510,19 +1527,15 @@ async function openSimModal(uid) {
     const wildSlot = !!out.wild;
     const requiredRoles = wildSlot ? null : new Set([out.role, ...(out.roles || [])].filter(Boolean));
 
-    function filteredCandidates(q) {
+    function filteredCandidates() {
       return (pool || []).filter(p => {
-        const id = (p.no||'')+'|'+(p.nation||'')+'|'+(p.name||'');
+        const id = (p.name||'')+'|'+(p.nation||'');
         if (inUseIds.has(id)) return false;
         if (mustBeArab && !p.arab) return false;
         if ((nationCount[p.nation] || 0) >= NATION_CAP) return false;
         if (requiredRoles) {
           const roles = new Set((p.roles || [p.role]).filter(Boolean));
           if (![...requiredRoles].some(r => roles.has(r))) return false;
-        }
-        if (q) {
-          const ql = q.toLowerCase();
-          if (!(p.name||'').toLowerCase().includes(ql) && !(p.club||'').toLowerCase().includes(ql)) return false;
         }
         return true;
       }).sort((a,b) => (simPlayerPts?.[b.name] || 0) - (simPlayerPts?.[a.name] || 0));
@@ -1537,7 +1550,6 @@ async function openSimModal(uid) {
       ${mustBeArab ? `<div class="sim-warn">⚠️ Must pick an Arab player (no Arabs left after this OUT)</div>` : ''}
       ${renderSummaryIfAny()}
       <div class="sim-step-label">Choose replacement</div>
-      <input class="sim-search" id="simSearch" placeholder="Search by name or club…" autocomplete="off">
       <div class="sim-list" id="simInList"></div>
       <div class="sim-actions">
         <button class="sim-reset-btn" id="simBackBtn">← Back</button>
@@ -1545,8 +1557,8 @@ async function openSimModal(uid) {
       </div>
     `;
 
-    function renderInList(q) {
-      const cands = filteredCandidates(q);
+    function renderInList() {
+      const cands = filteredCandidates();
       const list  = document.getElementById('simInList');
       if (!list) return;
       if (!cands.length) {
@@ -1557,7 +1569,7 @@ async function openSimModal(uid) {
       list.querySelectorAll('.sim-row').forEach(btn => {
         btn.onclick = () => {
           const id = btn.dataset.id;
-          const pick = cands.find(p => ((p.no||'')+'|'+(p.nation||'')+'|'+(p.name||'')) === id);
+          const pick = cands.find(p => ((p.name||'')+'|'+(p.nation||'')) === id);
           if (!pick) return;
           swaps[swaps.length - 1].in = pick;
           isDirty = true;
@@ -1572,8 +1584,7 @@ async function openSimModal(uid) {
       });
     }
 
-    renderInList('');
-    document.getElementById('simSearch').addEventListener('input', e => renderInList(e.target.value.trim()));
+    renderInList();
     document.getElementById('simBackBtn').onclick = () => {
       swaps.pop(); simStep = 'out'; renderPickOut();
     };
