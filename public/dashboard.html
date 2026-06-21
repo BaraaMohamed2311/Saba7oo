@@ -128,6 +128,7 @@ td{padding:7px 7px;border-bottom:1px solid rgba(255,255,255,.03);overflow:hidden
 .ps-pts{font-size:9px;font-weight:700;border-radius:6px;padding:1px 5px}
 .ps-pts.pos{background:rgba(92,240,194,.15);color:var(--accent);border:1px solid rgba(92,240,194,.3)}
 .ps-pts.neg{background:rgba(255,68,102,.12);color:var(--red);border:1px solid rgba(255,68,102,.25)}
+.ps-pts.zero{background:rgba(255,255,255,.05);color:var(--text-dim);border:1px solid rgba(255,255,255,.08);}
 .ps-next{font-size:9px;color:var(--text-dim);margin-top:2px;font-style:italic;max-width:110px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;text-align:center}
 .bench{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
 .bench-label{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:6px}
@@ -545,6 +546,102 @@ function getIso2Code(code3) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   ROUND-AWARE PLAYER SCORING
+   Mirrors halloamrika.saba7okorah.com's main.js: only the CURRENT
+   round's fixture counts towards a player's pitch-card points, and a
+   player's score stays at 0 until that fixture is actually played.
+═══════════════════════════════════════════════════════════ */
+const MD2_FIRST_KICKOFF = new Date('2026-06-18T16:00:00.000Z');
+const MD3_FIRST_KICKOFF = new Date('2026-06-24T19:00:00.000Z');
+
+// Roster nation name -> fixtures.json nation name (a few spellings differ)
+const FIXTURE_NATION_ALIAS = {
+  'DR Congo':'Congo DR','Cape Verde':'Cape Verde Islands',
+  'Bosnia and Herzegovina':'Bosnia & Herzegovina',
+  'Turkey':'Türkiye','United States':'USA',
+};
+
+function currentRoundPhase(now = new Date()){
+  if (now < MD2_FIRST_KICKOFF) return 'gw1';
+  if (now < MD3_FIRST_KICKOFF) return 'gw2';
+  return 'current';
+}
+
+// Earliest date belonging to the CURRENT round — filters out a nation's
+// previous-round fixture so we always land on THIS round's match.
+function currentRoundCutoff(){
+  const phase = currentRoundPhase();
+  if (phase === 'gw2') return MD2_FIRST_KICKOFF;
+  if (phase === 'current') return MD3_FIRST_KICKOFF;
+  return null; // gw1 — nothing earlier to exclude
+}
+
+let fixturesCache = null;   // [{id, date, home, away, round, ...}]
+let matchesById   = {};     // { [external_id]: {scored_at, ...} }
+
+async function loadFixturesJson(){
+  try{
+    const r = await fetch('https://halloamrika.saba7okorah.com/data/fixtures.json');
+    if(!r.ok) throw new Error('fixtures.json '+r.status);
+    const data = await r.json();
+    fixturesCache = data.fixtures || [];
+  }catch(e){
+    console.warn('[round-pts] fixtures.json load failed:', e.message);
+    fixturesCache = fixturesCache || [];
+  }
+}
+
+async function loadMatchesTable(){
+  try{
+    const rows = await sbFetch('matches?select=external_id,date,home,away,status,home_goals,away_goals,scored_at&order=date.desc&limit=200');
+    matchesById = {};
+    for(const m of rows||[]) matchesById[String(m.external_id)] = m;
+  }catch(e){
+    console.warn('[round-pts] matches table load failed:', e.message);
+  }
+}
+
+// First fixture for `nation` on/after the current round's cutoff — i.e.
+// the match being played THIS round, not an earlier or later one.
+function currentRoundFixtureFor(nation){
+  if(!fixturesCache || !fixturesCache.length || !nation) return null;
+  const fx = FIXTURE_NATION_ALIAS[nation] || nation;
+  const cutoff = currentRoundCutoff();
+  return fixturesCache.find(f =>
+    (f.home===fx || f.away===fx) && (!cutoff || new Date(f.date) >= cutoff)
+  ) || null;
+}
+
+function fixtureIsScored(fixture){
+  if(!fixture) return false;
+  return Boolean(matchesById[String(fixture.id)]?.scored_at);
+}
+
+function fixtureDbDate(fixture){
+  return new Date(fixture.date).toISOString().slice(0,10);
+}
+
+function redCardCount(st){
+  if(!st?.red) return 0;
+  return Math.abs(Number(st.red)) || 1;
+}
+function pointsFromStatLine(st){
+  return (st.win||0)+(st.full90||0)+(st.goals||0)+(st.assists||0)+(st.cleanSheet||0)+(st.mvp||0)-redCardCount(st);
+}
+
+// Round-specific points for a player. No fixture, or fixture not played
+// yet -> 0 (stays at 0 until played). Played but no breakdown for them
+// -> 0. Otherwise the actual points earned in THIS round's match only.
+function playerCurrentRoundPoints(playerName, fixture, scores){
+  if(!fixture || !fixtureIsScored(fixture)) return 0;
+  const dateKey = fixtureDbDate(fixture);
+  const row = (scores||[]).find(s => (s.match_date||'').slice(0,10) === dateKey);
+  const st  = row ? parseBD(row.breakdown)[playerName] : null;
+  if(!st || !Object.keys(st).length) return 0;
+  return pointsFromStatLine(st);
+}
+
+/* ═══════════════════════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════════════════════ */
 let currentProfile = null;
@@ -886,7 +983,11 @@ async function rpc(fn,body){
 }
 
 async function loadProfileGroupsFromCache() {
-  const profileDocs = await loadAllProfilesFromMongo();
+  const [profileDocs] = await Promise.all([
+    loadAllProfilesFromMongo(),
+    loadFixturesJson(),
+    loadMatchesTable(),
+  ]);
   allData = [];
 
   for(const pDoc of profileDocs) {
@@ -932,7 +1033,11 @@ async function fetchAll(){
 
   try {
     st('Loading all profiles from database…', true);
-    const profileDocs = await loadAllProfilesFromMongo();
+    const [profileDocs] = await Promise.all([
+      loadAllProfilesFromMongo(),
+      loadFixturesJson(),
+      loadMatchesTable(),
+    ]);
 
     const profileAccountMap = {};
     for (const pDoc of profileDocs) {
@@ -1168,9 +1273,21 @@ function buildPitch(starters, wild, scores, entry){
     }
     const name=p.shirt_name||p.name||'?';
     const iso2Country = getIso2Code(p.nation_code);
-    const ppts=entry?calcPlayerPts(p.name||name,scores):null;
-    const ptsStr=ppts!==null?`${ppts>=0?'+':''}${ppts}`:'';
-    const ptsHtml=ppts!==null&&ppts!==0?`<div class="ps-pts ${ptsClass(ppts)}">${ptsStr}</div>`:'';
+
+    // Round-aware points: only THIS round's fixture counts, staying at 0
+    // until that fixture is actually played.
+    const fixture = currentRoundFixtureFor(p.nation);
+    const ppts = playerCurrentRoundPoints(p.name, fixture, scores);
+    const ptsHtml = `<div class="ps-pts ${ptsClass(ppts)}">${ppts>=0?'+':''}${ppts}</div>`;
+
+    // Opponent for the match being played this round
+    let nextHtml='';
+    if(fixture){
+      const fx = FIXTURE_NATION_ALIAS[p.nation] || p.nation;
+      const opp = fixture.home===fx ? fixture.away : fixture.home;
+      nextHtml = `<div class="ps-next">vs ${esc(opp)}</div>`;
+    }
+
     return `<div class="pitch-slot" style="left:${pos.left}%;top:${pos.top}%;">
       <div class="ps-flag">
         ${iso2Country ? `<img class="flag-img-mid" src="https://flagcdn.com/w40/${iso2Country}.png" alt="${esc(p.nation_code)}" onerror="this.style.display='none'">` : `<span class="flag-img-mid-fallback"></span>`}
@@ -1178,6 +1295,7 @@ function buildPitch(starters, wild, scores, entry){
       <div class="ps-name" style="font-size:${name.length>8?'9px':'11px'}">${esc(name)}</div>
       <div class="ps-tag">${esc(tag)}</div>
       ${ptsHtml}
+      ${nextHtml}
     </div>`;
   }).join('');
 
@@ -1230,17 +1348,6 @@ function parseXI(entry){
 }
 function parseBD(bd){ try{return typeof bd==='string'?JSON.parse(bd):(bd||{});}catch(e){return {};} }
 
-function calcPlayerPts(name,scores){
-  let total=0;
-  if(!scores) return total;
-  for(const s of scores){
-    const bd=parseBD(s.breakdown);
-    const st=bd[name];
-    if(!st) continue;
-    total+=(st.goals||0)+(st.assists||0)+(st.win||0)+(st.full90||0)+(st.cleanSheet||0)+(st.mvp||0)-(st.red?1:0);
-  }
-  return total;
-}
 function ptsClass(n){return n>0?'pos':n<0?'neg':'zero';}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
 
