@@ -1000,17 +1000,25 @@ async function loadProfileGroupsFromCache() {
 }
 
 function buildLeaderboardArray() {
+  // Debug: log the first few rankRow objects so we can see the real field names
+  const sample = allData.slice(0, 3).map(d => ({ uid: d.account?.uid?.slice(0,8), rankRow: d.rankRow }));
+  console.log('[debug] rankRow samples:', JSON.stringify(sample, null, 2));
+
   allLb = allData
     .filter(d => d.rankRow || d.entry)
-    .map(d => ({
-      user_id:     d.account.uid,
-      team_name:   d.entry?.team_name || d.rankRow?.team_name || '—',
-      total_points:d.rankRow?.total_points ?? d.rankRow?.points ?? null,
-      _rank:       d.rankRow?.rank ?? d.rankRow?.user_rank ?? null,
-      _total:      d.rankRow?.total_entries ?? d.rankRow?.total ?? null,
-      _ownerLabel: d.account.label,
-      _profile:    d.account.profile,
-    }));
+    .map(d => {
+      const rr = d.rankRow;
+      const total_points = rr?.total_points ?? rr?.points ?? rr?.score ?? rr?.totalPoints ?? rr?.total_score ?? null;
+      return {
+        user_id:     d.account.uid,
+        team_name:   d.entry?.team_name || rr?.team_name || '—',
+        total_points,
+        _rank:       rr?.rank ?? rr?.user_rank ?? rr?.position ?? null,
+        _total:      rr?.total_entries ?? rr?.total ?? rr?.total_users ?? null,
+        _ownerLabel: d.account.label,
+        _profile:    d.account.profile,
+      };
+    });
   const uniqueMap = {};
   allLb = allLb.filter(item => {
     if(uniqueMap[item.user_id]) return false;
@@ -1113,9 +1121,9 @@ function renderOverview(){
   const el=document.getElementById('ovMsg');
   if (!allData.length){el.style.display='block';return;}
   el.style.display='none';
-  const ranks =allData.filter(d=>d.rankRow?.rank??d.rankRow?.user_rank).map(d=>+(d.rankRow.rank??d.rankRow.user_rank));
-  const totals=allData.filter(d=>d.rankRow?.total_entries??d.rankRow?.total).map(d=>+(d.rankRow.total_entries??d.rankRow.total));
-  const pts   =allData.filter(d=>d.rankRow).map(d=>+(d.rankRow.total_points??d.rankRow.points??0));
+  const ranks =allData.filter(d=>d.rankRow?.rank??d.rankRow?.user_rank??d.rankRow?.position).map(d=>+(d.rankRow.rank??d.rankRow.user_rank??d.rankRow.position));
+  const totals=allData.filter(d=>d.rankRow?.total_entries??d.rankRow?.total??d.rankRow?.total_users).map(d=>+(d.rankRow.total_entries??d.rankRow.total??d.rankRow.total_users));
+  const pts   =allData.filter(d=>d.rankRow).map(d=>+(d.rankRow.total_points??d.rankRow.points??d.rankRow.score??d.rankRow.totalPoints??d.rankRow.total_score??0));
   const bestRank =ranks.length?Math.min(...ranks):null;
   const totalPool=totals.length?Math.max(...totals):null;
   const topPts   =pts.length?Math.max(...pts):null;
@@ -1183,9 +1191,25 @@ function renderSquads(){
 function renderPitchCard({account,entry,rankRow,scores}, canEdit){
   const team  = entry?.team_name||rankRow?.team_name||'—';
   const form  = entry?.formation||rankRow?.formation||'—';
-  const pts   = rankRow?.total_points??rankRow?.points??'—';
-  const globalRank=rankRow?.rank??rankRow?.user_rank??null;
-  const totalPool =rankRow?.total_entries??rankRow?.total??null;
+
+  // Try every known field name variant the user_rank RPC might return,
+  // then fall back to summing the scores rows directly.
+  const ptsRaw = rankRow?.total_points
+    ?? rankRow?.points
+    ?? rankRow?.score
+    ?? rankRow?.totalPoints
+    ?? rankRow?.total_score
+    ?? null;
+
+  // If rankRow gave us nothing, sum the scores table (all rounds)
+  const ptsFallback = (ptsRaw === null && scores && scores.length)
+    ? scores.reduce((s, r) => s + (r.points || 0), 0)
+    : null;
+
+  const pts = ptsRaw ?? ptsFallback ?? '—';
+
+  const globalRank=rankRow?.rank??rankRow?.user_rank??rankRow?.position??null;
+  const totalPool =rankRow?.total_entries??rankRow?.total??rankRow?.total_users??null;
   const rankStr   = globalRank?`#${globalRank}${totalPool?' of '+totalPool:''}`:'Unranked';
   const marked    = isMarked(account.profile, account.uid);
 
